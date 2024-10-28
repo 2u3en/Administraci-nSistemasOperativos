@@ -1,0 +1,258 @@
+#!/bin/bash 
+
+#Script para unión de cliente Ubuntu con servidor openLDAP.
+#Autor : Rubén Pujante
+
+#--------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- COLORES
+	
+		nc='\033[0m' 		#Sin color
+		r='\033[0;31m'		#Rojo
+		g='\033[0;32m'		#Verde
+		y='\033[1;33m'		#Amarillo
+		b='\033[1;34m'		#Azul
+		
+	# ----- VARIABLES
+		
+		BASE_DN="dc=servidor25,dc=local"
+		LDAP_SERVER="ldap://192.168.100.10"
+		ADMIN_DN="cn=admin,dc=servidor25,dc=local"
+
+#--------------------------------------------------------------------------------------------------------------------------
+
+	# ----- FUNCIÓN COMPROBACIONES.
+
+#--------------------------------------------------------------------------------------------------------------------------
+
+	
+
+#--------------------------------------------------------------------------------------------------------------------------
+
+	# ----- FUNCIONES PARA LA INSTALACIÓN DE PAQUETES.
+
+#--------------------------------------------------------------------------------------------------------------------------
+
+	# ----- 1 - Función update y upgrade.
+		actualizar_paquetes(){
+	
+			echo -e "${b}Actualizando paquetes...${nc}"
+
+				
+				apt-get update -y 
+				
+
+			echo -e "${g}Actualización completa.${nc}" 
+
+		}
+		
+#--------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- 2 - Función instalación paquetes para OpenLDAP.
+		instalar_paquetes(){
+		
+			export DEBIAN_FRONTEND=noninteractive
+		
+			
+				echo -e "${b}Instalando paquetes necesarios...${nc}"
+
+				
+				echo -e "${y}Instalando ldap-utils...${nc}"
+					apt install -y ldap-utils
+					echo -e "${g}Instalación ldap-utils completa.${nc}"
+
+				
+				echo -e "${y}Instalando libnss-ldap...${nc}"
+					apt install -y libnss-ldap
+					echo -e "${g}Instalación libnss-ldap completa.${nc}"
+
+				
+				echo -e "${y}Instalando libpam-ldap...${nc}"
+					apt install -y libpam-ldap
+					echo -e "${g}Instalación libpam-ldap completa.${nc}"
+
+				echo -e "${y}Instalando nslcd...${nc}"
+					apt install -y nslcd
+					echo -e "${g}Instalación nscld completa.${nc}"
+
+		}
+		
+			echo -e "${g}Paquetes necesarios para OpenLDAP instalados con éxito.${nc}"
+		
+#-------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- FUNCIONES PARA LA MODIFICACIÓN DE ARCHIVOS DE CONFIGURACIÓN.
+	
+#-------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- 1 - Función modificar archivo ldap.conf
+
+	# Como hemos hecho la instalación de paquetes de forma desatendida hemos de modificar el archivo ldap.conf
+	
+		configurar_ldap(){
+		
+			echo -e "${b}Configurando archivo ldap.conf...${nc}"
+			
+			cp /etc/ldap.conf /etc/ldap.conf.bak # ----- Copia de seguridad del archivo
+			
+
+				# ----- Establecer DN del servidor.
+				echo -e "${y}Estableciendo Distinguished Name (DN) base. ${nc}" $BASE_DN 
+					
+					if grep -q "^base" /etc/ldap.conf; then
+						sed -i "s|^base.*|base $BASE_DN|" /etc/ldap.conf
+						echo -e "${g}Distinguished Name establecido.${nc}"
+					else
+						echo -e "${r}ERROR: DN no establecido.${nc}"	
+					fi
+					
+				
+				# ----- Establecer URI del servidor.
+				echo -e "${y}Estableciendo URI del servidor LDAP. ${nc}" $LDAP_SERVER 
+					
+					if grep -q "^uri" /etc/ldap.conf; then
+						sed -i "s|^uri.*|uri $LDAP_SERVER|" /etc/ldap.conf
+						echo -e "${g}URI establecida.${nc}"	
+					else
+						echo -e "${r}ERROR: URI no establecida.${nc}"	
+					fi
+				
+
+				# ----- Establecer nombre cuenta con privilegios del servidor.
+				echo -e "${y}Estableciendo admin del servidor LDAP. ${nc}" $ADMIN_DN 
+					
+					if grep -q "^rootbinddn" /etc/ldap.conf; then
+						sed -i "s|^rootbinddn.*|rootbinddn $ADMIN_DN|" /etc/ldap.conf
+						echo -e "${g}Establecido correctamente.${nc}"	
+					else
+						echo -e "${r}ERROR: No establecido.${nc}"	
+					fi
+
+				
+				
+			echo -e "${g}Archivo ldap.conf configurado con éxito.${nc}"
+					
+		}
+
+#---------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- 2 - Función modificación archivo /etc/nssswitch.conf
+	
+		configurar_nsswitch(){
+
+			echo -e "${b}Configurando archivo nsswitch.conf...${nc}"
+			
+			 cp /etc/nsswitch.conf /etc/nsswitch.conf.bak # ----- Copia de seguridad del archivo
+
+				sed -i 's|^passwd:.*|passwd:		files ldap|' /etc/nsswitch.conf
+				echo -e "${g}passwd modificacado${nc}"
+			
+				
+				sed -i 's|^group:.*|group:		files ldap|' /etc/nsswitch.conf
+				echo -e "${g}group modificacado${nc}"
+				
+				
+				sed -i 's|^shadow:.*|shadow:		files ldap|' /etc/nsswitch.conf
+				echo -e "${g}shadow modificacado${nc}"
+					
+					
+				sed -i 's|^gshadow:.*|gshadow:	files|' /etc/nsswitch.conf
+				echo -e "${g}gshadow modificacado${nc}"	
+				
+			echo -e "${g}Archivo nsswitch.conf configurado con éxito${nc}"
+		
+		}
+
+#---------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- 3 - Función modificación archivo /etc/pam.d/common-password
+		configurar_password(){
+		
+			echo -e "${b}Configurando archivo pam.d/common-password...${nc}"
+			
+			cp /etc/pam.d/common-password /etc/pam.d/common-password.bak # ----- Copia de seguridad del archivo
+
+				sed -i 's/use_authtok//g' /etc/pam.d/common-password
+
+			echo -e "${g}Archivo pam.d/common-password configurado con éxito${nc}"
+		
+		}
+		
+#---------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- 4 - Función modificación archivo /etc/pam.d/common-session
+		configurar_session(){
+		
+			echo -e "${b}Configurando archivo pam.d/common-session...${nc}"
+			
+			cp /etc/pam.d/common-session /etc/pam.d/common-session.bak # ----- Copia de seguridad del archivo
+			
+			
+			RUTA="/etc/pam.d/common-session"
+			LINEA="session optional pam_mkhomedir.so skel=/etc/skel umask=077"
+
+				 echo -e "${y}Añadiendo línea...${nc}"
+				 
+    				 	sed -i '$i session optional 	pam_mkhomedir.so skel=/etc/skel umask=077' "$RUTA"
+    				 
+    				 echo -e "${g}Línea añadida con éxito.${nc}"
+							
+			echo -e "${g}Archivo pam.d/common-session configurado con éxito${nc}"
+
+		}
+
+#---------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- 5 - Función modificación archivo /etc/nslcd.conf
+
+		configurar_nslcd(){
+			echo -e "${b}Configurando archivo nslcd.conf...${nc}"
+
+			sed -i "s|^uri.*|uri $LDAP_SERVER|" /etc/nslcd.conf
+				echo -e "${g}URI modificada${nc}"
+
+			sed -i "s|^base.*|base $BASE_DN|" /etc/nslcd.conf
+				echo -e "${g}Base modificada${nc}"
+
+			echo -e "${g}Archivo nslcd.conf configurado con éxito${nc}"
+
+		}
+
+#--------------------------------------------------------------------------------------------------------------------------	
+
+	# ----- Reinicio del equipo
+	
+		reinicio(){
+			echo -e "${y}Reiniciando el equipo...${nc}"
+		
+				sleep 5
+			
+				reboot
+		}
+
+#-------------------------------------------------------------------------------------------------------------------------
+	
+	# ----- Inicialización del script
+
+		read -p "$(echo -e "${y}¿Desea iniciar la ejecución del script para la unión del usuario al server? (s/n): ${nc}")" respuesta
+
+			if [[ "$respuesta" =~ ^[Ss]$ ]]; then
+
+				actualizar_paquetes
+				
+				instalar_paquetes
+					
+				configurar_ldap
+				
+				configurar_nsswitch
+				
+				configurar_session
+
+				configurar_nslcd
+				
+				#reinicio	
+				
+			else
+				echo -e "${r}Ejecución del script cancelada.${nc}"
+				exit 0
+			fi
