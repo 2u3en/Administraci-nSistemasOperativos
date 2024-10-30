@@ -215,7 +215,7 @@
     
 	    		if [ $? -eq 0 ]; then
 	        		
-	        		echo -e "${g}Atributo del usuario '$uid' modificado exitosamente.${nc}"
+	        		echo -e "${g}Atributo del usuario '$uid' modificado.${nc}"
 	    			
 	    			else
 	    				echo""
@@ -241,6 +241,17 @@
         			return
     			fi
 
+# ----- Pregunta de verificación de la eliminación.
+
+			read -p " ¿Está seguro que desea eliminar el usuario '$uid'? (s/n) : " respuesta
+
+					if [[ "$respuesta" != "sS" ]];then
+						echo ""
+						echo -e "${r}Eliminación cancelada${nc}"
+
+						exit 0
+					fi
+
 # ----- Eliminar usuario de LDAP
     
     		ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "uid=$uid,ou=usuarios,$BASE_DN"
@@ -250,7 +261,7 @@
 	    		if [ $? -eq 0 ]; then
 	        		
 	        		echo ""
-	        		echo -e "${g}Usuario eliminado exitosamente.${nc}"
+	        		echo -e "${g}Usuario eliminado.${nc}"
 	    			
 	    			else
 	    				echo""
@@ -265,26 +276,28 @@
 # ----- Función para obtener último GUIDNumber en uso.
 #--------------------------------------------------------------------------------------------------------------------------
 
+				GRUPOS="ou=grupos"
+
 			obtener_ultimoguid(){
 
-				ultimo_guid=$(ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "ou=grupos,$BASE_DN" "(objectClass=group)" guidNumber | \
+				ultimo_gid=$(ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "dn: $GRUPOS,$BASE_DN" "(objectClass=posixGroup)" gidNumber | \
 
-					awk '/^guidNumber:/ {print $2}' | sort -n | tail -n 1)
+					awk '/^gidNumber:/ {print $2}' | sort -n | tail -n 1)
 
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Utilizar el último guidnumber y calcular el siguiente. 
 
 
-							if [ -z "$ultimo_guid" ]; then 			
-								nuevo_guid=20000 					
+							if [ -z "$ultimo_gid" ]; then 			
+								nuevo_gid=15000 					
 
 							else
 
-								nuevo_guid=$((ultimo_guid +1))		
+								nuevo_gid=$((ultimo_gid +1))		
 
 							fi
 
-							echo "$nuevo_guid"
+							echo "$nuevo_gid"
 			}
 
 # ----- Las funciones anteriores se comportan de la misma manera que las utilizadas en el apartado de usuario.
@@ -296,9 +309,9 @@
 
 		existe_grupo(){
 
-			local guid=$1	
+			local cn=$1	
 
-				ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "ou=grupos,$BASE_DN" "(guid=$guid)" | grep -q "^dn:"
+				ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$GRUPOS,$BASE_DN" "(cn=$cn)" | grep -q "^cn: $cn"
 		}
 
 #--------------------------------------------------------------------------------------------------------------------------
@@ -309,14 +322,14 @@
 # ---- Solicitud de atributos
 
 			echo ""
-			read -p " Introduzca nombre para el nuevo grupo(cn): " guid
+			read -p " Introduzca nombre para el nuevo grupo(cn): " cn
 
 # ----- Comprobar si el grupo introducido existe
 
-				if existe_grupo "$guid"; then									
+				if existe_grupo "$cn"; then									
 
 					echo ""
-					echo -e "${r} ERROR : El grupo '$guid' ya existe."			
+					echo -e "${r} ERROR : El grupo '$cn' ya existe."			
 
 					return
 				fi
@@ -324,10 +337,10 @@
 # ----- Creación de archivo .ldif 
 
 			cat <<-EOF > $LDIF_GR
-					dn: uid=$guid,ou=usuarios,$$BASE_DN
-					objectClass: group
-					cn: $guid
-					guidNumber: $nuevo_guid	
+					dn: cn=$cn,$GRUPOS,$BASE_DN
+					objectClass: posixGroup
+					cn: $cn
+					guidNumber: $nuevo_gid	
 				EOF
 
 			echo "${g}Archivo grupo.ldif procesado con éxito. ${nc}"
@@ -362,23 +375,23 @@
 				touch "$CAMBIOS_FILE"
 			fi
 
-# ----- Introducir guid como parámetro de búsqueda.			
+# ----- Introducir gid como parámetro de búsqueda.			
 
 			echo ""
-			read -p " Introduce el guid del grupo a modificar : " guid
+			read -p " Introduce el nombre(cn) del grupo a modificar : " cn
 
 # ----- Verificar que el grupo existe antes de eliminar.
     	
-    			if ! existe_grupo "$guid"; then
+    			if ! existe_grupo "$cn"; then
         			echo""
-        			echo -e ${r}"Error: El grupo '$guid' no existe.${nc}"
+        			echo -e ${r}"Error: El grupo '$cn' no existe.${nc}"
         			return
     			fi
 
 # ----- Atributos a modificar
 			
 			echo ""
-			echo -e "${y} Atributos disponibles para modificar: cn, sn, gidNumber.${nc}"
+			echo -e "${y} Atributos disponibles para modificar: cn,ou.${nc}"
 
 			echo ""
 			read -p "  Introduzca el atributo que desea modificar: " atributo
@@ -388,7 +401,7 @@
 
 # ----- Creación del archivo de modificación.
 
-			echo "dn: guid=$guid,ou=grupos,$BASE_DN" > "$CAMBIOS_FILE"
+			echo "dn: cn=$cn,$GRUPOS,$BASE_DN" > "$CAMBIOS_FILE"
 			echo "changetype: modify" >> "$CAMBIOS_FILE"
 			echo "replace: $atributo" >> "$CAMBIOS_FILE"
 			echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
@@ -405,11 +418,11 @@
     
 	    		if [ $? -eq 0 ]; then
 	        		
-	        		echo -e "${g}Atributo del grupo '$guid' modificado exitosamente.${nc}"
+	        		echo -e "${g}Atributo del grupo '$cn' modificado.${nc}"
 	    			
 	    			else
 	    				echo""
-	        			echo -e "${r}Error al modificar el atributo del grupo '$guid'.${nc}"
+	        			echo -e "${r}Error al modificar el atributo del grupo '$cn'.${nc}"
 	    		fi
 
     		> "$CAMBIOS_FILE"
@@ -421,24 +434,28 @@
 #--------------------------------------------------------------------------------------------------------------------------
 		eliminar_grupo(){
 
-			read -p " Introduzca el nombre del grupo (guid) a eliminar: " guid
+			read -p " Introduzca el nombre del grupo (cn) a eliminar: " cn
 
 # ----- Verificar que el grupo existe antes de eliminar
     	
-    			if ! existe_grupo "$guid"; then
+    			if ! existe_grupo "$cn"; then
         			echo""
-        			echo -e ${r}"Error: El grupo '$guid' no existe.${nc}"
+        			echo -e ${r}"Error: El grupo '$cn' no existe.${nc}"
         			return
     			fi
 
-# ----- Eliminar grupo de LDAP
+# ----- Pregunta de verificación de la eliminación.
 
-			echo ""
-			echo -e "${y}Está apunto de eliminar el grupo.¿Esta seguro? (s/n). ${nc}" respuesta
+			read -p " ¿Está seguro que desea eliminar el grupo '$cn'? (s/n) : " respuesta
 
-			if [[ $respuesta =~ sS ]];then
+					if [[ "$respuesta" != "sS" ]];then
+						echo ""
+						echo -e "${r}Eliminación cancelada${nc}"
+
+						exit 0
+					fi
     
-    		ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "guid=$guid,ou=grupos,$BASE_DN"
+    		ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "dn: cn=$cn,$GRUPOS,$BASE_DN"
 
     		else
     
@@ -447,7 +464,7 @@
 	    		if [ $? -eq 0 ]; then
 	        		
 	        		echo ""
-	        		echo -e "${g}Grupo eliminado exitosamente.${nc}"
+	        		echo -e "${g}Grupo eliminado.${nc}"
 	    			
 	    			else
 	    				echo""
