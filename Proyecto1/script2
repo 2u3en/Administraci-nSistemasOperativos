@@ -30,49 +30,40 @@
 
 # ----- Función para obtener último UIDNumber en uso.
 #--------------------------------------------------------------------------------------------------------------------------
-		obtener_ultimouid(){
-
+	obtener_ultimouid(){
 			ultimo_uid=$(ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "ou=usuarios,$BASE_DN" "(objectClass=posixAccount)" uidNumber | \
-
 				awk '/^uidNumber:/ {print $2}' | sort -n | tail -n 1)
 
 		
-		# ----- Con ldapsearch... buscamos, autenticándonos como admin en el servidor, como base de búsqueda, la OU:usuarios, y con filtro : possixAccount(es decir cuentas de usuario), el atributos UIDNumber
+			# ----- Con ldapsearch... buscamos, autenticándonos como admin en el servidor, como base de búsqueda, la OU:usuarios, y con filtro : possixAccount(es decir cuentas de usuario), el atributos UIDNumber
 
-		# ----- Pasamos la salida de la búsqueda a 'awk' para que busque las líneas que comienzan por uidNumber (^uidNumber:)
+			# ----- Pasamos la salida de la búsqueda a 'awk' para que busque las líneas que comienzan por uidNumber (^uidNumber:)
 
-		# ----- Con {print $2} conseguimos el segundo campo de las líneas que comienzan por uidNumber, es decir el propio uidNumber.
+			# ----- Con {print $2} conseguimos el segundo campo de las líneas que comienzan por uidNumber, es decir el propio uidNumber.
 
-		# ----- Con 'sort -n' ordena la lista obtenida de forma numérica.
+			# ----- Con 'sort -n' ordena la lista obtenida de forma numérica.
 
-		# ----- Con 'tail -n 1' obtenemos la última línea de la salida de 'sort', consiguiendo así el ultimo uidNumber.
+			# ----- Con 'tail -n 1' obtenemos la última línea de la salida de 'sort', consiguiendo así el ultimo uidNumber.
 
-		# ----- Una  vez obtenido el último uidNumber lo asignamos a la variable ultimo_uid 
+			# ----- Una  vez obtenido el último uidNumber lo asignamos a la variable ultimo_uid 
 
-
-# ----- Utilizar el último uidnumber y calcular el siguiente
-
+#--------------------------------------------------------------------------------------------------------------------------
+	# ----- Utilizar el último uidnumber y calcular el siguiente
+#--------------------------------------------------------------------------------------------------------------------------
 
 							if [ -z "$ultimo_uid" ]; then 			# ----- Si la variable $ultimo_uid esta vacía
-
 								nuevo_uid=20000 					# -----  Asignamos el uidNumber 20000
-
 							else
-
-								nuevo_uid=$((ultimo_uid +1))		# ----- Si no está vacía, a su contenido, el último uidNumber, le sumamos 1
-																	# ----- Y lo establecemos  en la variable $nuevo_uid
+								nuevo_uid=$((ultimo_uid +1))		# ----- Si no está vacía, a su contenido, el último uidNumber, le sumamos 1										# ----- Y lo establecemos  en la variable $nuevo_uid
 							fi
 
 							echo "$nuevo_uid"
 			}
-
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para comprobar si existe el usuario a crear.
 #--------------------------------------------------------------------------------------------------------------------------
-		existe_usuario(){
-
+	existe_usuario(){
 			local uid=$1	
-
 				ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "ou=usuarios,$BASE_DN" "(uid=$uid)" | grep -q "^dn:"
 		}
 
@@ -87,551 +78,542 @@
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para crear un nuevo usuario.
 #--------------------------------------------------------------------------------------------------------------------------
-		crear_usuario(){
+	crear_usuario(){
 		
-# ---- Solicitud de atributos
-
-			echo ""
-			read -p " Introduzca nombre del usuario(cn): " cn
-
-			echo ""
-			read -p " Introduzca apellido(sn): " sn
-
-			echo ""
-			read -p " Introduzca el nombre de usuari(uid): " uid
-
-# ----- Comprobar si el usuario introducido existe
-
-				if existe_usuario "$uid"; then									# ----- Pasamos $uid a la funcion existe_usuario 
+		# ---- Solicitud de atributos
+					echo ""
+					read -p " Introduzca nombre de pila usuario(cn): " cn
 
 					echo ""
-					echo -e "${r} ERROR : El usuario '$uid' ya existe."			# ----- Si existe no muestra el error, si no continúa la solicitud de datos.
+					read -p " Introduzca apellido(sn): " sn
 
-					return
-				fi
-
-
-			echo ""
-			read -p " Introduzca correo electrónico: " mail
-
-			echo ""
-			read -p " Contraseña: " passwd
-
-			uid_number=$(obtener_ultimouid) 						# ----- Utilizamos la función obtener_ultimouid y le asignamos el ultimo uidNumer+1 a uidNumber
-
-	
-# ----- Creación de archivo .ldif 									# ----- Creamos el archivo con el contenido introducido por el usuario y el nuevo uidNumber calculado
-
-			cat <<-EOF > $LDIF_US
-					dn: uid=$uid,ou=usuarios,$BASE_DN
-					objectClass: inetOrgPerson
-					objectClass: posixAccount
-					objectClass: top
-					cn: $cn
-					sn: $sn
-					uid: $uid
-					mail: $mail
-					userPassword: $passwd
-					uidNumber: $uid_number
-					gidNumber: 10000
-					loginShell: /bin/bash
-					homeDirectory: /home/$uid
-				EOF
-
-			echo ""
-			echo -e "${g}Archivo usuario.ldif procesado con éxito. ${nc}"
-	
-# ----- Añadir usuario a LDAP
-
-			ldapadd -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$LDIF_US" > /dev/null 
-	
-
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
-
-				if [ $? -eq 0 ]; then
 					echo ""
-					echo -e "${g}Nuevo usuario creado correctamente.${nc}"
+					read -p " Introduzca el nombre de usuario(uid): " uid
 
-				else
-					echo""
-					echo -e "${r}Error al crear el nuevo usuario"${nc}
-				fi
-		   
-		}
+		# ----- Comprobar si el usuario introducido existe
 
+						if existe_usuario "$uid"; then									# ----- Pasamos $uid a la funcion existe_usuario 
+							echo ""
+							echo -e "${r} ERROR : El usuario '$uid' ya existe."			# ----- Si existe muestra el error.
+							return
+						fi
+
+		# ---- Continuación de solicitud de atributos
+					echo ""
+					read -p " Introduzca correo electrónico: " mail
+
+					echo ""
+					read -p " Contraseña: " passwd
+					echo ""
+
+		# ----- Llamada a la función para calcular uidNumber
+					uid_number=$(obtener_ultimouid) 						# ----- Utilizamos la función obtener_ultimouid y le asignamos el ultimo uidNumer+1 a uidNumber
+
+			
+		# ----- Creación de archivo .ldif
+				echo "" 													# ----- Creamos el archivo con el contenido introducido por el usuario y el nuevo uidNumber calculado
+				echo -e "${y} Creando archivo usuario.ldif...${nc}"
+
+					cat <<-EOF > $LDIF_US
+							dn: uid=$uid,ou=usuarios,$BASE_DN
+							objectClass: inetOrgPerson
+							objectClass: posixAccount
+							objectClass: top
+							cn: $cn
+							sn: $sn
+							uid: $uid
+							mail: $mail
+							userPassword: $passwd
+							uidNumber: $uid_number
+							gidNumber: 10000
+							loginShell: /bin/bash
+							homeDirectory: /home/$uid
+						EOF
+
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  			
+					if [ $? -eq 0 ]; then
+							echo ""
+							echo -e "${g}Archivo usuario.ldif creado con éxito. ${nc}"
+						else
+							echo""
+							echo -e "${r}Error al crear el archivo"${nc}
+						fi		
+		
+		# ----- Añadir usuario a LDAP
+					ldapadd -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$LDIF_US" > /dev/null 
+			
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+						if [ $? -eq 0 ]; then
+							echo ""
+							echo -e "${g}Nuevo usuario creado correctamente.${nc}"
+						else
+							echo""
+							echo -e "${r}Error al crear el nuevo usuario"${nc}
+						fi		   
+	}
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para modificar un usuario.
 #--------------------------------------------------------------------------------------------------------------------------
-		modificar_usuario(){
+	modificar_usuario(){
 
 			CAMBIOS_FILE="cambios.ldif"
 
-# ----- Si el archivo cambios.ldif no existe crearlo.
+		# ----- Si el archivo cambios.ldif no existe crearlo.
+					if [ ! -f "$CAMBIOS_FILE" ]; then
+						touch "$CAMBIOS_FILE"
+					fi
+
+		# ----- Introducir uid como parámetro de búsqueda.		
+					echo ""
+					read -p " Introduce el nombre de usuario a modificar : " uid
+
+		# ----- Verificar que el usuario existe antes de modificar.	
+		    			if ! existe_usuario "$uid"; then
+		        			echo""
+		        			echo -e ${r}"Error: El usuario '$uid' no existe.${nc}"
+		        			return
+		    			fi
+
+		# ----- Menú de atributos posibles de modificar 						Hemos controlado las opciones para que atributos como el uidNumber no puedan ser modificados.
+					echo ""
+					echo -e "${y} Atributos disponibles para modificar${nc}"
+					echo ""
+								echo "  1) cn (Nombre completo)"
+								echo ""
+								echo "  2) sn (Apellido)"
+								echo ""
+								echo "  3) mail (Correo electrónico)"
+								echo ""
+								echo "  4) userPassword (Contraseña)"
+								echo ""
+								echo "  5) telephoneNumber (Número de teléfono)"
+								echo ""
+								echo "  6) address (Dirección)"
+								echo ""
+
+		# ----- Leer la opción elegida por el usuario
+					read -p "  Introduzca el número del atributo que desea modificar: " opcion
+					echo ""
+
+		# ----- Asignar el atributo basado en la opción elegida
+								case "$opcion" in
+								    1)
+								        atributo="cn"
+								        ;;
+								    2)
+								        atributo="sn"
+								        ;;
+								    3)
+								        atributo="mail"
+								        ;;
+								    4)
+								        atributo="userPassword"
+								        ;;
+								    5)
+								        atributo="telephoneNumber"
+								        ;;
+								    6)
+								        atributo="address"
+								        ;;
+								    *)
+								        echo -e "${r}Error: Opción no válida.${nc}"
+								        return
+								        ;;
+								esac
+					echo ""
 			
-			if [ ! -f "$CAMBIOS_FILE" ]; then
-				touch "$CAMBIOS_FILE"
-			fi
+		# ----- Solicitud nuevo valor del atributo
+				read -p "  Introduzca el nuevo valor para $atributo : " nuevo_valor
 
-# ----- Introducir uid como parámetro de búsqueda.			
+		# ----- Creación del archivo de modificación.
+					echo "dn: uid=$uid,ou=usuarios,$BASE_DN" > "$CAMBIOS_FILE"
+					echo "changetype: modify" >> "$CAMBIOS_FILE"
+					echo "replace: $atributo" >> "$CAMBIOS_FILE"
+					echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
 
-			echo ""
-			read -p " Introduce el nombre de usuario a modificar : " uid
+					echo ""
+					echo -e "${g}Procesando archivo cambios.ldif... ${nc}"
+					echo ""
+					sleep 1
 
-# ----- Verificar que el usuario existe antes de eliminar.
-    	
-    			if ! existe_usuario "$uid"; then
-        			echo""
-        			echo -e ${r}"Error: El usuario '$uid' no existe.${nc}"
-        			return
-    			fi
+		# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
+					ldapmodify -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$CAMBIOS_FILE"
 
-# ----- Atributos a modificar
-			
-			echo ""
-			echo -e "${y} Atributos disponibles para modificar: cn, sn, userPassword, gidNumber.${nc}"
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+			    		if [ $? -eq 0 ]; then
+			        		
+			        		echo -e "${g}Atributo del usuario '$uid' modificado.${nc}"
+			    			echo ""
+			    		else
+			    			echo""
+			        		echo -e "${r}Error al modificar el atributo del usuario '$uid'.${nc}"
+			    		fi
 
-			echo ""
-			read -p "  Introduzca el atributo que desea modificar: " atributo
-
-			echo ""
-			read -p "  Introduzca el nuevo valor para $atributo : " nuevo_valor
-
-# ----- Creación del archivo de modificación.
-
-			echo "dn: uid=$uid,ou=usuarios,$BASE_DN" > "$CAMBIOS_FILE"
-			echo "changetype: modify" >> "$CAMBIOS_FILE"
-			echo "replace: $atributo" >> "$CAMBIOS_FILE"
-			echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
-
-			echo ""
-			echo -e "${g}Procesando archivo cambios.ldif... ${nc}"
-			echo ""
-			
-# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
-
-			ldapmodify -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$CAMBIOS_FILE"
-
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
-    
-	    		if [ $? -eq 0 ]; then
-	        		
-	        		echo -e "${g}Atributo del usuario '$uid' modificado.${nc}"
-	    			
-	    			else
-	    				echo""
-	        			echo -e "${r}Error al modificar el atributo del usuario '$uid'.${nc}"
-	    		fi
-
-    		> "$CAMBIOS_FILE"
-
-		}
-
+		    		> "$CAMBIOS_FILE"
+	}
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para eliminar un usuario.
 #--------------------------------------------------------------------------------------------------------------------------
-		eliminar_usuario(){
+	eliminar_usuario(){
+			echo ""
+			read -p " Introduzca el nombre de usuario(uid) a eliminar: " uid
 
-			read -p " Introduzca el nombre de usuario (uid) a eliminar: " uid
+		# ----- Verificar que el usuario existe antes de eliminar
+		    			if ! existe_usuario "$uid"; then
+		        			echo""
+		        			echo -e ${r}"Error: El usuario '$uid' no existe.${nc}"
+		        			return
+		    			fi
 
-# ----- Verificar que el usuario existe antes de eliminar
-    	
-    			if ! existe_usuario "$uid"; then
-        			echo""
-        			echo -e ${r}"Error: El usuario '$uid' no existe.${nc}"
-        			return
-    			fi
+		# ----- Pregunta de verificación de la eliminación.
+					echo ""
+					read -p " ¿Está seguro que desea eliminar el usuario '$uid'? (s/n) : " respuesta
 
-# ----- Pregunta de verificación de la eliminación.
-
-			read -p " ¿Está seguro que desea eliminar el usuario '$uid'? (s/n) : " respuesta
-
-					if [[ "$respuesta" != "sS" ]];then
-						echo ""
-						echo -e "${r}Eliminación cancelada${nc}"
-
-						exit 0
-					fi
-
-# ----- Eliminar usuario de LDAP
-    
-    		ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "uid=$uid,ou=usuarios,$BASE_DN"
-    
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
-    
-	    		if [ $? -eq 0 ]; then
-	        		
-	        		echo ""
-	        		echo -e "${g}Usuario eliminado.${nc}"
-	    			
-	    			else
-	    				echo""
-	        			echo -e "${r}Error al eliminar el usuario.${nc}"
-	    		fi
-		}
-
+							if [[ "$respuesta" =~ ^[Ss]$ ]];then								
+		# ----- Eliminar usuario de LDAP
+		    					ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "uid=$uid,ou=usuarios,$BASE_DN"
+								echo ""
+								echo -e "${g} Usuario eliminado.${nc}"
+							else
+								echo""
+			        			echo -e "${r}Error al eliminar el usuario.${nc}"
+							fi
+	}
 #--------------------------------------------------------------------------------------------------------------------------
 # -------------------------------------------- FUNCIONES PARA GRUPOS ------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------
 
 # ----- Función para obtener último GUIDNumber en uso.
 #--------------------------------------------------------------------------------------------------------------------------
+		GRUPOS="ou=grupos"
 
-				GRUPOS="ou=grupos"
-
-			obtener_ultimoguid(){
-
-				ultimo_gid=$(ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "dn: $GRUPOS,$BASE_DN" "(objectClass=posixGroup)" gidNumber | \
-
-					awk '/^gidNumber:/ {print $2}' | sort -n | tail -n 1)
+	obtener_ultimogid(){
+		ultimo_gid=$(ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$GRUPOS,$BASE_DN" "(objectClass=posixGroup)" gidNumber | \
+			awk '/^gidNumber:/ {print $2}' | sort -n | tail -n 1)
 
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Utilizar el último guidnumber y calcular el siguiente. 
-
-
-							if [ -z "$ultimo_gid" ]; then 			
-								nuevo_gid=15000 					
-
-							else
-
-								nuevo_gid=$((ultimo_gid +1))		
-
-							fi
-
-							echo "$nuevo_gid"
+#--------------------------------------------------------------------------------------------------------------------------
+				if [ -z "$ultimo_gid" ]; then 
+					nuevo_gid=15000	
+				else
+					nuevo_gid=$((ultimo_gid +1))
+				fi
+				echo "$nuevo_gid"
 			}
-
-# ----- Las funciones anteriores se comportan de la misma manera que las utilizadas en el apartado de usuario.
-
-
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para comprobar si existe el grupo a crear.
 #--------------------------------------------------------------------------------------------------------------------------
-
-		existe_grupo(){
-
-			local cn=$1	
-
-				ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$GRUPOS,$BASE_DN" "(cn=$cn)" | grep -q "^cn: $cn"
+	existe_grupo(){
+		local cn=$1	
+			ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$GRUPOS,$BASE_DN" "(cn=$cn)" | grep -q "^cn: $cn"
 		}
+#--------------------------------------------------------------------------------------------------------------------------
+# ----- Función para verificar que el gid es válido
+#--------------------------------------------------------------------------------------------------------------------------
+					if [ $? -ne 0 ]; then
+						echo -e "${r}Error al obtener gidNumber.${nc}"
+						return
+					fi
+
+						# Validar que gid_number sea un número
+					if ! [[ "$gid_number" =~ ^[0-9]+$ ]]; then
+						echo -e "${r}Error: gidNumber generado no es válido.${nc}"
+						return
+					fi
 
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para crear un nuevo grupo.
 #--------------------------------------------------------------------------------------------------------------------------
-		crear_grupo(){
+	crear_grupo(){
 
-# ---- Solicitud de atributos
-
-			echo ""
-			read -p " Introduzca nombre para el nuevo grupo(cn): " cn
-
-# ----- Comprobar si el grupo introducido existe
-
-				if existe_grupo "$cn"; then									
-
+		# ---- Solicitud de atributos
 					echo ""
-					echo -e "${r} ERROR : El grupo '$cn' ya existe."			
+					read -p " Introduzca nombre para el nuevo grupo(cn): " cn
 
-					return
-				fi
+		# ----- Comprobar si el grupo introducido existe
+						if existe_grupo "$cn"; then									
+							echo ""
+							echo -e "${r} ERROR : El grupo '$cn' ya existe."			
+							return
+						fi
 
-# ----- Creación de archivo .ldif 
+		# ----- Llamada a la función para calcular uidNumber
+					gid_number=$(obtener_ultimogid) 
 
-			cat <<-EOF > $LDIF_GR
-					dn: cn=$cn,$GRUPOS,$BASE_DN
-					objectClass: posixGroup
-					cn: $cn
-					guidNumber: $nuevo_gid	
-				EOF
+					echo "Nuevo gidNumber generado: $gid_number"
 
-			echo "${g}Archivo grupo.ldif procesado con éxito. ${nc}"
+		# ----- Creación de archivo grupo.ldif 
+				echo "dn: cn=$cn,ou=grupos,$BASE_DN" > $LDIF_GR
+				echo "objectClass: posixGroup" >> $LDIF_GR
+				echo "cn: $cn" >> $LDIF_GR		
+				echo "gidNumber: $gid_number" >> $LDIF_GR
+					
+		# ----- 				
+				echo ""
+				echo -e "${g}Procesando archivo grupo.ldif... ${nc}"
+				echo ""
+				sleep 1	
+			
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  			
+					if [ $? -eq 0 ]; then
+						echo ""
+						echo -e "${g}Archivo grupo.ldif creado con éxito. ${nc}"
+						echo ""
+					else
+						echo""
+						echo -e "${r}Error al crear el archivo"${nc}
+					fi			
 
-# ----- Añadir grupo a LDAP
+		# ----- Muestra el contenido del archivo grupo.ldif para comprobar el formato.
+						echo "Contenido de grupo.ldif:"
+						cat "$LDIF_GR"
 
-			ldapadd -x -D "$ADMIN_DN" -W -f "$LDIF_GR"
+		# ----- Añadir grupo a LDAP
+					ldapadd -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$LDIF_GR"
 
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+						if [ $? -eq 0 ]; then
+							echo ""
+							echo -e "${g}Nuevo grupo creado correctamente.${nc}"
+						else
+							echo""
+							echo -e "${r}Error al crear el nuevo grupo"${nc}
+						fi
 
-				if [ $? -eq 0 ]; then
-					echo ""
-					echo -e "${g}Nuevo grupo creado correctamente.${nc}"
-
-				else
-					echo""
-					echo -e "${r}Error al crear el nuevo grupo"${nc}
-				fi
-		   
-		}
-		
+					> "$LDIF_GR"		   
+	}		
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para modificar un grupo
 #--------------------------------------------------------------------------------------------------------------------------
-		modificar_grupo(){
+	modificar_grupo(){
 
 			CAMBIOS_FILE="cambios.ldif"
 
-# ----- Si el archivo cambios.ldif no existe crearlo.
-			
-			if [ ! -f "$CAMBIOS_FILE" ]; then
-				touch "$CAMBIOS_FILE"
-			fi
+		# ----- Si el archivo cambios.ldif no existe crearlo.
+					if [ ! -f "$CAMBIOS_FILE" ]; then
+						touch "$CAMBIOS_FILE"
+					fi
 
-# ----- Introducir gid como parámetro de búsqueda.			
+		# ----- Introducir gid como parámetro de búsqueda.	
+					echo ""
+					read -p " Introduce el nombre(cn) del grupo a modificar : " cn
 
-			echo ""
-			read -p " Introduce el nombre(cn) del grupo a modificar : " cn
+		# ----- Verificar que el grupo existe antes de eliminar.
+		    			if ! existe_grupo "$cn"; then
+		        			echo""
+		        			echo -e ${r}"Error: El grupo '$cn' no existe.${nc}"
+		        			return
+		    			fi
 
-# ----- Verificar que el grupo existe antes de eliminar.
-    	
-    			if ! existe_grupo "$cn"; then
-        			echo""
-        			echo -e ${r}"Error: El grupo '$cn' no existe.${nc}"
-        			return
-    			fi
+		# ----- Atributos a modificar
+					echo ""
+					echo -e "${y} Atributos disponibles para modificar: cn,ou.${nc}"
 
-# ----- Atributos a modificar
-			
-			echo ""
-			echo -e "${y} Atributos disponibles para modificar: cn,ou.${nc}"
+					echo ""
+					read -p "  Introduzca el atributo que desea modificar: " atributo
 
-			echo ""
-			read -p "  Introduzca el atributo que desea modificar: " atributo
+					echo ""
+					read -p "  Introduzca el nuevo valor para $atributo : " nuevo_valor
 
-			echo ""
-			read -p "  Introduzca el nuevo valor para $atributo : " nuevo_valor
+		# ----- Creación del archivo de modificación.
+					echo "dn: cn=$cn,$GRUPOS,$BASE_DN" > "$CAMBIOS_FILE"
+					echo "changetype: modify" >> "$CAMBIOS_FILE"
+					echo "replace: $atributo" >> "$CAMBIOS_FILE"
+					echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
 
-# ----- Creación del archivo de modificación.
+					echo ""
+					echo -e "${g}Procesando archivo cambios.ldif... ${nc}"
+					echo ""
+					
+		# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
+					ldapmodify -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$CAMBIOS_FILE"
 
-			echo "dn: cn=$cn,$GRUPOS,$BASE_DN" > "$CAMBIOS_FILE"
-			echo "changetype: modify" >> "$CAMBIOS_FILE"
-			echo "replace: $atributo" >> "$CAMBIOS_FILE"
-			echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+			    		if [ $? -eq 0 ]; then
+			        		
+			        		echo -e "${g}Atributo del grupo '$cn' modificado.${nc}"
+			    			
+			    			else
+			    				echo""
+			        			echo -e "${r}Error al modificar el atributo del grupo '$cn'.${nc}"
+			    		fi
 
-			echo ""
-			echo -e "${g}Procesando archivo cambios.ldif... ${nc}"
-			echo ""
-			
-# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
-
-			ldapmodify -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$CAMBIOS_FILE"
-
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
-    
-	    		if [ $? -eq 0 ]; then
-	        		
-	        		echo -e "${g}Atributo del grupo '$cn' modificado.${nc}"
-	    			
-	    			else
-	    				echo""
-	        			echo -e "${r}Error al modificar el atributo del grupo '$cn'.${nc}"
-	    		fi
-
-    		> "$CAMBIOS_FILE"
-
+		    		> "$CAMBIOS_FILE"
 		}
-
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para eliminar un grupo.
 #--------------------------------------------------------------------------------------------------------------------------
-		eliminar_grupo(){
+	eliminar_grupo(){
+		echo ""
+		read -p " Introduzca el nombre del grupo (cn) a eliminar: " cn
 
-			read -p " Introduzca el nombre del grupo (cn) a eliminar: " cn
+		# ----- Verificar que el grupo existe antes de eliminar
+		    			if ! existe_grupo "$cn"; then
+		        			echo""
+		        			echo -e ${r}"Error: El grupo '$cn' no existe.${nc}"
+		        			return
+		    			fi
 
-# ----- Verificar que el grupo existe antes de eliminar
-    	
-    			if ! existe_grupo "$cn"; then
-        			echo""
-        			echo -e ${r}"Error: El grupo '$cn' no existe.${nc}"
-        			return
-    			fi
+		# ----- Pregunta de verificación de la eliminación.
+					read -p " ¿Está seguro que desea eliminar el grupo '$cn'? (s/n) : " respuesta
 
-# ----- Pregunta de verificación de la eliminación.
-
-			read -p " ¿Está seguro que desea eliminar el grupo '$cn'? (s/n) : " respuesta
-
-					if [[ "$respuesta" != "sS" ]];then
-						echo ""
-						echo -e "${r}Eliminación cancelada${nc}"
-
-						exit 0
-					fi
-    
-    		ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "dn: cn=$cn,$GRUPOS,$BASE_DN"
-
-    		else
-    
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
-    
-	    		if [ $? -eq 0 ]; then
-	        		
-	        		echo ""
-	        		echo -e "${g}Grupo eliminado.${nc}"
-	    			
-	    			else
-	    				echo""
-	        			echo -e "${r}Error al eliminar el grupo.${nc}"
-	    		fi
-		}
-		
+							if [[ "$respuesta" != "sS" ]];then
+								echo ""
+								echo -e "${r}Eliminación cancelada${nc}"
+								exit 0
+							else
+		    					ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "dn: cn=$cn,$GRUPOS,$BASE_DN"
+							fi
+		   
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+			    		if [ $? -eq 0 ]; then
+			        		echo ""
+			        		echo -e "${g}Grupo eliminado.${nc}"
+			    		else
+			    			echo""
+			        		echo -e "${r}Error al eliminar el grupo.${nc}"
+			    		fi
+		}	
 #--------------------------------------------------------------------------------------------------------------------------
 # -------------------------------------------- FUNCIONES PARA OU ----------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------
 
 # ----- Función para la creación de unidades organizativas.
 #--------------------------------------------------------------------------------------------------------------------------
-		crear_ou(){
+	crear_ou(){
 
-			# ---- Solicitud de atributos
-
+		# ---- Solicitud de atributos
 			echo ""
 			read -p " Introduzca nombre para la nueva unidad organizativa(ou): " ou
 
-# ----- Comprobar si la OU introducida existe
+		# ----- Comprobar si la OU introducida existe
+						if existe_ou "$ou"; then									
+							echo ""
+							echo -e "${r} ERROR : La ou '$ou' ya existe."			
+							return
+						fi
 
-				if existe_ou "$ou"; then									
+		# ----- Creación de archivo .ldif 
+					cat <<-EOF > $LDIF_OU
+							dn: ,$$BASE_DN
+							objectClass: ou
+							cn: 
+								
+						EOF
 
-					echo ""
-					echo -e "${r} ERROR : La ou '$ou' ya existe."			
+					echo "${g}Archivo ou.ldif procesado con éxito. ${nc}"
 
-					return
-				fi
+		# ----- Añadir ou a LDAP
+					ldapadd -x -D "$ADMIN_DN" -W -f "$LDIF_OU"
 
-# ----- Creación de archivo .ldif 
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+					if [ $? -eq 0 ]; then
+						echo ""
+						echo -e "${g}Nueva unidad organizativa creada correctamente.${nc}"
 
-			cat <<-EOF > $LDIF_OU
-					dn: ,$$BASE_DN
-					objectClass: ou
-					cn: 
-						
-				EOF
+					else
+						echo""
+						echo -e "${r}Error al crear la nueva unidad organizativa"${nc}
+					fi			   
+	}
 
-			echo "${g}Archivo ou.ldif procesado con éxito. ${nc}"
-
-# ----- Añadir ou a LDAP
-
-			ldapadd -x -D "$ADMIN_DN" -W -f "$LDIF_OU"
-
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
-
-				if [ $? -eq 0 ]; then
-					echo ""
-					echo -e "${g}Nueva unidad organizativa creada correctamente.${nc}"
-
-				else
-					echo""
-					echo -e "${r}Error al crear la nueva unidad organizativa"${nc}
-				fi
-		   
-		}
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para modificar OU.
 #--------------------------------------------------------------------------------------------------------------------------
-		modificar_ou(){
+	modificar_ou(){
 			
 			CAMBIOS_FILE="cambios.ldif"
 
-# ----- Si el archivo cambios.ldif no existe crearlo.
-			
-			if [ ! -f "$CAMBIOS_FILE" ]; then
-				touch "$CAMBIOS_FILE"
-			fi
+		# ----- Si el archivo cambios.ldif no existe crearlo.
+					if [ ! -f "$CAMBIOS_FILE" ]; then
+						touch "$CAMBIOS_FILE"
+					fi
 
-# ----- Introducir guid como parámetro de búsqueda.			
+		# ----- Introducir guid como parámetro de búsqueda.			
+					echo ""
+					read -p " Introduce el nombre de la OU a modificar : " ou
 
-			echo ""
-			read -p " Introduce el nombre de la OU a modificar : " ou
+		# ----- Verificar que el grupo existe antes de eliminar.
+		    		if ! existe_ou "$ou"; then
+		        		echo""
+		        		echo -e ${r}"Error: La OU '$ou' no existe.${nc}"
+		        		return
+		    		fi
 
-# ----- Verificar que el grupo existe antes de eliminar.
-    	
-    			if ! existe_ou "$ou"; then
-        			echo""
-        			echo -e ${r}"Error: La OU '$ou' no existe.${nc}"
-        			return
-    			fi
+		# ----- Atributos a modificar
+					echo ""
+					echo -e "${y} Atributos disponibles para modificar: ${nc}"
 
-# ----- Atributos a modificar
-			
-			echo ""
-			echo -e "${y} Atributos disponibles para modificar: ${nc}"
+					echo ""
+					read -p "  Introduzca el atributo que desea modificar: " atributo
 
-			echo ""
-			read -p "  Introduzca el atributo que desea modificar: " atributo
+					echo ""
+					read -p "  Introduzca el nuevo valor para $atributo : " nuevo_valor
 
-			echo ""
-			read -p "  Introduzca el nuevo valor para $atributo : " nuevo_valor
+		# ----- Creación del archivo de modificación.
+					echo "dn: ou=grupos,$BASE_DN" > "$CAMBIOS_FILE"
+					echo "changetype: modify" >> "$CAMBIOS_FILE"
+					echo "replace: $atributo" >> "$CAMBIOS_FILE"
+					echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
 
-# ----- Creación del archivo de modificación.
+					echo ""
+					echo -e "${g}Procesando archivo cambios.ldif... ${nc}"
+					echo ""
+					
+		# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
+					ldapmodify -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$CAMBIOS_FILE"
 
-			echo "dn: ou=grupos,$BASE_DN" > "$CAMBIOS_FILE"
-			echo "changetype: modify" >> "$CAMBIOS_FILE"
-			echo "replace: $atributo" >> "$CAMBIOS_FILE"
-			echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+			    		if [ $? -eq 0 ]; then
+			        		
+			        		echo -e "${g}Atributo de la OU '$ou' modificado exitosamente.${nc}"
+			    			
+			    			else
+			    				echo""
+			        			echo -e "${r}Error al modificar el atributo de la OU '$ou'.${nc}"
+			    		fi
 
-			echo ""
-			echo -e "${g}Procesando archivo cambios.ldif... ${nc}"
-			echo ""
-			
-# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
+		    		> "$CAMBIOS_FILE"
+	}
 
-			ldapmodify -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$CAMBIOS_FILE"
-
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
-    
-	    		if [ $? -eq 0 ]; then
-	        		
-	        		echo -e "${g}Atributo de la OU '$ou' modificado exitosamente.${nc}"
-	    			
-	    			else
-	    				echo""
-	        			echo -e "${r}Error al modificar el atributo de la OU '$ou'.${nc}"
-	    		fi
-
-    		> "$CAMBIOS_FILE"
-
-		}
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Función para eliminar OU.
 #--------------------------------------------------------------------------------------------------------------------------
-		eliminar_ou(){
-			read -p " Introduzca el nombre de la unidad organizativa(OU) a eliminar: " ou
+	eliminar_ou(){
+		echo""
+		read -p " Introduzca el nombre de la unidad organizativa(OU) a eliminar: " ou
 
-# ----- Verificar que la OU existe antes de eliminar
-    	
-    			if ! existe_ou "$ou"; then
-        			echo""
-        			echo -e ${r}"Error: La OU '$ou' no existe.${nc}"
-        			return
-    			fi
+		# ----- Verificar que la OU existe antes de eliminar	
+		    			if ! existe_ou "$ou"; then
+		        			echo""
+		        			echo -e ${r}"Error: La OU '$ou' no existe.${nc}"
+		        			return
+		    			fi
 
-# ----- Eliminar grupo de LDAP
+		# ----- Eliminar grupo de LDAP
+					echo ""
+					echo -e "${y}Está apunto de eliminar la OU $ou. ¿Esta seguro? (s/n). ${nc}" respuesta
 
-			echo ""
-			echo -e "${y}Está apunto de eliminar la OU $ou. ¿Esta seguro? (s/n). ${nc}" respuesta
-
-			if [[ $respuesta =~ sS ]];then
-    
-    		ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "ou=$ou,$BASE_DN"
-
-    		else
-    
-# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
-    
-	    		if [ $? -eq 0 ]; then
-	        		
-	        		echo ""
-	        		echo -e "${g}Unidad organizativa eliminada exitosamente.${nc}"
-	    			
-	    			else
-	    				echo""
-	        			echo -e "${r}Error al eliminar la unidad organizativa.${nc}"
-	    		fi
-		}
-#--------------------------------------------------------------------------------------------------------------------------
-
+					if [[ $respuesta =~ sS ]];then
+		    		ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "ou=$ou,$BASE_DN"
+		    		else
+		    			echo -e "${r} Eliminación cancelada${nc}"
+		    		fi
+		    
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.  
+			    		if [ $? -eq 0 ]; then			  
+			        		echo ""
+			        		echo -e "${g}Unidad organizativa eliminada exitosamente.${nc}"			    			
+			    		else
+			    			echo""
+			        		echo -e "${r}Error al eliminar la unidad organizativa.${nc}"
+			    		fi
+	}
 #--------------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------- Menú selección creación de objetos ---------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------			
-		crear_objeto(){
-
+	crear_objeto(){
 			while true; do
 			    	echo ""
 					echo -e "${y}Seleccione el tipo de objeto a crear : ${nc}"
@@ -656,23 +638,19 @@
 									crear_ou
 									;;
 								4)
-									echo -e "${y}Saliendo...${nc}"; 
-									exit 0
+									return
 									;;
 								*)
 									echo "Opción inválida"
 									;;
 							esac
 			done
-
 		}
 #--------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------ Menú selección modificación de objetos ---------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------	        
-		modificar_objeto(){
-
+	modificar_objeto(){
 			while true; do  
-
 					echo ""
 					echo -e "${y}Seleccione el tipo de objeto a modificar : ${nc}"
 
@@ -703,15 +681,12 @@
 									;;
 							esac
 			done
-
 		}
 #--------------------------------------------------------------------------------------------------------------------------
 # ----------------------------------------- Menú selección eliminación de objetos -----------------------------------------	
 #--------------------------------------------------------------------------------------------------------------------------	              
-		eliminar_objeto(){
-
+	eliminar_objeto(){
 			while true; do
-
 					echo""
 					echo -e "${y}Seleccione el tipo de objeto a eliminar : ${nc}"
 					echo""
@@ -742,14 +717,11 @@
 									;;
 							esac
 			done
-
 		}
 #--------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------------------ MENÚ PRINCIPAL ---------------------------------------------------------
 #--------------------------------------------------------------------------------------------------------------------------
-
-			while true; do
-					
+			while true; do				
 					echo ""
 					echo -e "${b}================================================="
 
@@ -766,7 +738,6 @@
 						echo "  4. Salir"
 						echo ""
 						read -p  "Seleccione una opción [1-4] : " opcion
-
 
 							case $opcion in
 
@@ -787,5 +758,4 @@
 							        echo "Opción inválida"
 							        ;;
 							esac
-
 			done
