@@ -1,0 +1,50 @@
+
+#Script para Inserción, modificación y eliminación de objetos en OpenLDAP.
+#Autor : Rubén Pujante
+
+# ----- ÍNDICE SCRIPT1
+
+#------------------------------------------------------------------------------------------------------------------
+# ----- FUNCIONES PARA LA INSTALACIÓN DE PAQUETES.
+#--------------------------------------------------------------------------------------------------------------------------
+	# ----- 1 - Función update y upgrade.
+
+	# ----- 2 - Función instalación paquetes para OpenLDAP.
+
+
+#------------------------------------------------------------------------------------------------------------------
+# ----- FUNCIONES PARA LA MODIFICACIÓN DE ARCHIVOS DE CONFIGURACIÓN.	
+#------------------------------------------------------------------------------------------------------------------
+	
+	# ----- 1 - Función modificar archivo ldap.conf
+
+		# ----- Copia de seguridad del archivo.
+		# ----- Establecer DN del servidor.
+		# ----- Establecer URI del servidor.
+		# ----- Establecer nombre usuario con privilegios del servidor.
+
+
+	# ----- 2 - Función modificación archivo /etc/nssswitch.conf
+
+		# ----- Copia de seguridad del archivo.
+		# ----- Modificación del archivo.
+
+
+	# ----- 3 - Función modificación archivo /etc/pam.d/common-password
+
+		# ----- Copia de seguridad del archivo.
+		# ----- Modificación del archivo.
+
+	# ----- 4 - Función modificación archivo /etc/pam.d/common-session
+
+		# ----- Copia de seguridad del archivo.
+		# ----- Modificación del archivo.
+
+	# ----- 5 - Función modificación archivo /etc/nslcd.conf
+
+		# ----- Copia de seguridad del archivo.
+		# ----- Modificación del archivo.
+
+	# ----- Reinicio del equipo.
+
+	# ----- Inicialización del script.

@@ -1,0 +1,182 @@
+
+#Script para Inserción, modificación y eliminación de objetos en OpenLDAP.
+#Autor : Rubén Pujante
+
+# ----- ÍNDICE SCRIPT2
+
+#--------------------------------------------------------------------------------------------------------------------------
+# ----- FUNCIONES GENERALES
+#--------------------------------------------------------------------------------------------------------------------------
+
+# ----- Función general para comprobar la correcta o incorrecta ejecución del comando anterior.
+# ----- Función para que la solicitud de campos no quede vacía.
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+# ----- FUNCIONES PARA USUARIOS
+#--------------------------------------------------------------------------------------------------------------------------
+
+# ----- Función para obtener último UIDNumber en uso.
+# ----- Utilizar el último uidnumber y calcular el siguiente.
+# ----- Función para comprobar si existe el usuario antes de crear.
+
+
+# ----- Función para crear un nuevo usuario.
+#--------------------------------------------------------------------------------------------------------------------------	
+		
+		# ----- Solicitud de atributos.
+		# ----- Comprobar si el usuario introducido existe.
+		# ----- Evitar que la contraseña se alamacene en texto plano(no funciona).
+		# ----- Llamada a la función para calcular uidNumber.
+		# ----- Creación de archivo .ldif
+		# ----- Comprobación ejecución del comando anterior.
+		# ----- Añadir usuario a LDAP.
+		# ----- Comprobación ejecución del comando anterior.
+
+
+# ----- Función para modificar un usuario.
+#--------------------------------------------------------------------------------------------------------------------------
+		
+		# ----- Si el archivo cambios.ldif no existe crearlo.
+		# ----- Introducir uid como parámetro de búsqueda.
+		# ----- Verificar que el usuario existe antes de modificar.	
+		# ----- Menú de atributos posibles de modificar.
+		# ----- Leer la opción elegida por el usuario.
+		# ----- Asignar el atributo basado en la opción elegida
+		# ----- Solicitud nuevo valor del atributo.
+		# ----- Creación del archivo de modificación.
+		# ----- Comprobación ejecución del comando anterior.
+		# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
+		# ----- Comprobación ejecución del comando anterior.
+		# ----- Limpieza del archivo CAMBIOS_FILE.
+
+
+# ----- Función para eliminar un usuario.
+#--------------------------------------------------------------------------------------------------------------------------
+		
+		# ----- Solicitud de uid como parámetro de búsqueda.
+		# ----- Verificar que el usuario existe antes de eliminar.
+		# ----- Pregunta de verificación de la eliminación.
+		# ----- Control de la eliminación.
+		# ----- Eliminar usuario de LDAP.
+		# ----- Comprobación ejecución del comando anterior.
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+# ----- FUNCIONES PARA GRUPOS
+#--------------------------------------------------------------------------------------------------------------------------
+
+# ----- Función para comprobar si existe el grupo.
+# ----- Función para obtener último GUIDNumber en uso.
+# ----- Utilizar el último guidnumber y calcular el siguiente. 
+# ----- Función para verificar que el gid es válido
+
+
+# ----- Función para crear grupo.
+#--------------------------------------------------------------------------------------------------------------------------
+
+		# ----- Solicitud de atributos.
+		# ----- Comprobar si el grupo introducido existe.
+		# ----- Llamada a la función para calcular uidNumber.
+		# ----- Creación de archivo grupo.ldif 
+		# ----- Comprobación ejecución del comando anterior.
+		# ----- Muestra el contenido del archivo grupo.ldif para comprobar el formato.
+		# ----- Añadir grupo a LDAP.
+		# ----- Verificación si el comando anterior se ha ejecutado correctamente.
+		# ----- Limpieza archivo.
+
+
+# ----- Función para modificar un grupo.
+#--------------------------------------------------------------------------------------------------------------------------
+		
+		# ----- Si el archivo cambios.ldif no existe crearlo.
+		# ----- Introducir cn como parámetro de búsqueda.
+		# ----- Verificar que el grupo existe antes de modificar.
+		# ----- Menú de atributos posibles de modificar.
+		# ----- Leer la opción elegida por el usuario.
+		# ----- Asignar el atributo basado en la opción elegida.
+		# ----- Cambiar el cn del grupo.
+		# ----- Solicitud nuevo valor del atributo cuando no es el CN.
+		# ----- Creación del archivo de modificación.
+		# ----- Comprobación ejecución del comando anterior.
+		# ----- Contenido archivo cambios.ldif
+		# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
+		# ----- Comprobación ejecución del comando anterior.
+		# Limpiar archivo cambios.ldif
+
+
+# ----- Función para eliminar un grupo.
+#--------------------------------------------------------------------------------------------------------------------------
+
+		# ----- Introducir cn como parámetro de búsqueda.
+		# ----- Verificar que el grupo existe antes de eliminar.
+		# ----- Obtener miembros del grupo.
+		# ----- Mostrar miembros.
+		# ----- Mensaje de aviso.
+		# ----- Pregunta de verificación de la eliminación.
+		# ----- Comprobación ejecución del comando anterior.
+
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+# ----- FUNCIONES PARA OU 
+#--------------------------------------------------------------------------------------------------------------------------
+
+# ----- Función para comprobar si existe el unidad organizativa.
+
+
+# ----- Función para crear una unidad organizativa.
+#--------------------------------------------------------------------------------------------------------------------------
+
+		# ----- Solicitar información al usuario.
+		# ----- Verificar si la ou existe antes de crear.
+		# ----- Crear el archivo LDIF.
+		# ----- Comprobación ejecución del comando anterior.
+		# ----- Mostrar el contenido del archivo LDIF.
+		# ----- Añadir la OU a LDAP.
+		# ----- Comprobación ejecución del comando anterior.
+
+
+# ----- Función para modificar una OU.
+#--------------------------------------------------------------------------------------------------------------------------
+
+		# ----- Si el archivo cambios.ldif no existe crearlo.
+		# ----- Introducir ou como parámetro de búsqueda.
+		# ----- Verificar que la ou existe antes de modificar.
+		# ----- Menú de atributos a modificar.
+		# ----- Cambiar ou de la OU.
+		# ----- Solicitud nuevo valor en el caso de atributos diferentes al nombre de la OU.
+		# ----- Creación del archivo de modificación.
+		# ----- Comprobación ejecución del comando anterior.
+		# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
+		# ----- Comprobación ejecución del comando anterior.
+		# ----- Limpieza del archivo.
+
+
+# ----- Función para eliminar OU.
+#--------------------------------------------------------------------------------------------------------------------------
+
+		# ----- Solicitud de nombre de OU.
+		# ----- Verificar que la OU existe antes de eliminar.
+		# ----- Mostrar contenido de la OU.
+		# ----- Almacenar usuarios y grupos.
+		# ----- Mostrar usuarios y grupos.
+		# ----- Control de la eliminación.
+		# ----- Comprobación ejecución del comando anterior.
+
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+# ----- Menús de selección  
+#--------------------------------------------------------------------------------------------------------------------------	
+
+# ----- Menú selección creación de objetos.
+# ----- Menú selección modificación de objetos.
+# ----- Menú selección eliminación de objetos.
+# ----- Slapcat.
+
+
+#--------------------------------------------------------------------------------------------------------------------------
+# ----- MENÚ PRINCIPAL
+#--------------------------------------------------------------------------------------------------------------------------
+
