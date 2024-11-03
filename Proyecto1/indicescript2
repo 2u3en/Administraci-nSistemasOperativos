@@ -165,6 +165,8 @@
 		# ----- Comprobación ejecución del comando anterior.
 
 
+# ----- Función para ver el contenido del servidor. 
+#--------------------------------------------------------------------------------------------------------------------------
 
 #--------------------------------------------------------------------------------------------------------------------------
 # ----- Menús de selección  
@@ -173,7 +175,7 @@
 # ----- Menú selección creación de objetos.
 # ----- Menú selección modificación de objetos.
 # ----- Menú selección eliminación de objetos.
-# ----- Slapcat.
+# ----- Ver contenido del servidor.
 
 
 #--------------------------------------------------------------------------------------------------------------------------

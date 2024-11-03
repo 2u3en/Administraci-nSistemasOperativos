@@ -71,20 +71,12 @@
 						apt install -y nslcd
 						echo -e "${g} Instalación nscld completa.${nc}"
 						echo ""
-
-		# ----- Sin configurar.
-					echo -e "${y} Instalando slapd...${nc}"
-						apt install -y slapd
-						echo -e "${g} Instalación slapd completa.${nc}"
-						echo ""
-
-				separador
-			}
 			
 				echo -e "${g} Paquetes necesarios para OpenLDAP instalados con éxito.${nc}"
 				echo ""
 
 				separador
+			}
 			
 	#-------------------------------------------------------------------------------------------------------------------------
 		# ----- FUNCIONES PARA LA MODIFICACIÓN DE ARCHIVOS DE CONFIGURACIÓN.	
