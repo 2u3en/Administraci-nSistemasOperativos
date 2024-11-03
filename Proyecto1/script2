@@ -33,13 +33,13 @@
 
 		# ----- Función general para comprobar la correcta o incorrecta ejecución del comando anterior.
 		#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-			comprobacion(){
-			 	local correcto="$1"
+			comprobacion(){																	# ---- Esta función comprueba la ejecución del comando anterior, con el bucle 'if' y la condición [$? -eq 0], si el resultado no ha tenido fallos, es decir 0, mostrará un mensaje, el cual pasaremos como parámetro.
+			 	local correcto="$1"															# ---- Si la condición devolviese un 1, mostrará el mensaje de error, también indicado por nosotros.
 		    	local error="$2"
 
 		    		if [ $? -eq 0 ]; then
 		        echo ""
-		        echo -e "${g}  ${correcto}${nc}"
+		        echo -e "${g}  ${correcto}${nc}"											
 		    		else
 		        echo ""
 		        echo -e "${r}  ${error}${nc}"
@@ -47,7 +47,7 @@
 			}
 		# ----- Función para que la solicitud de campos no quede vacía.
 		#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-			campo_vacio(){
+			campo_vacio(){																		# ----- Esta función utiliza el parámetro introducido, el cual se pasará a $campo y este a $varible ,para que el 'if, con condicion [-n "$variable"]', es decir, la longitud de la variable es mayor a cero, evalúe si está vacía.
 			  local campo="$1"
 			  local variable=""
 
@@ -57,7 +57,7 @@
 		       		if [[ -n "$variable" ]]; then
 
 		            	echo "$variable" 
-		            	return    	
+		            	return    																# ----- Si $variable, es decir el campo está vacío, volverá a formular la pregunta (read) donde se esté utilizando la función.
 		        	else
 		# ----- Mensaje de error, asegurándonos de que se imprima en la salida estándar
 		        	echo -e "${r}  Error: Este campo no puede estar vacío.${nc}" 	>&2  		# ----- Envio del error a stderr (salida estándar de errores)
@@ -134,7 +134,7 @@
 
 								if existe_usuario "$uid"; then									# ----- Pasamos $uid a la funcion existe_objeto y 'usuario' para $tipo.
 									echo ""
-									echo -e "${r} ERROR : El usuario '$uid' ya existe."			# ----- Si no existe muestra el error.
+									echo -e "${r} ERROR : El usuario '$uid' ya existe."			# ----- Si ya existe muestra el error.
 									return
 								fi
 
@@ -145,7 +145,7 @@
 							echo ""
 							passwd=$(campo_vacio " Introduzca la contraseña: ")
 
-				# ----- Evitar que la contraseña se alamacene en texto plano					# No funciona, fichero slapd no configurado. 
+				# ----- Evitar que la contraseña se alamacene en texto plano					
 							contraseña=$(slappasswd -s "$passwd")  > /dev/null 2>&1
 
 				# ----- Continuación de solicitud de atributos
@@ -159,7 +159,7 @@
 						echo "" 													# ----- Creamos el archivo con el contenido introducido por el usuario y el nuevo uidNumber calculado
 						echo -e "${y} Creando archivo usuario.ldif...${nc}"
 
-							cat <<-EOF > $LDIF_US
+							cat <<-EOF > $LDIF_US									# ----- EOF( es una secuencia heredoc), podemos redirigir múltiples líneas a un archivo
 									dn: uid=$uid,ou=usuarios,$BASE_DN
 									objectClass: inetOrgPerson
 									objectClass: posixAccount
@@ -198,14 +198,14 @@
 					CAMBIOS_FILE="cambios.ldif"
 
 				# ----- Si el archivo cambios.ldif no existe crearlo.
-							if [ ! -f "$CAMBIOS_FILE" ]; then
+							if [ ! -f "$CAMBIOS_FILE" ]; then										# ----- Bucle para controlar la existencia del archivo cambios.ldif, si no existe lo crea.
 								touch "$CAMBIOS_FILE"
 							fi
 
 				# ----- Introducir uid como parámetro de búsqueda.		
 							read -p " Introduzca el nombre de usuario a modificar(uid): " uid
 
-				# ----- Verificar que el usuario existe antes de modificar.	
+				# ----- Verificar que el usuario existe antes de modificar.							# ----- Bucle de control negado para que si no existe el usuario mande un mensaje de error,ya que al no existir no se puede modificar.
 				    			if ! existe_usuario "$uid"; then
 				        			echo""
 				        			echo -e "${r}Error: El usuario '$uid' no existe.${nc}"
@@ -702,7 +702,7 @@
 								read -p " Introduzca el nuevo nombre para la OU: " nueva_ou
 
 						            # ----- Renombrar la OU usando ldapmodrdn
-									        ldapmodrdn -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "ou=$ou,$BASE_DN" "ou=$nueva_ou"
+									        ldapmodrdn -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "ou=$ou,$BASE_DN" "ou=$nueva_ou"						# ----- Mediante el comando ldapmodrdn podemos modificar el DN del objeto, con ldapmodify no podríamos. 
 
 									# ----- Comprobación 
 											comprobacion "El nombre de la OU se ha cambiado de '$ou' a '$nueva_ou'." "Error al cambiar el nombre de la OU '$ou'."
@@ -828,15 +828,14 @@
 					echo ""
 
 					echo -e "${y}--- USUARIOS ---${nc}"
-						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=posixAccount)" | grep -E 'uid: |dn: |cn: |sn: |uidNumber: '
+						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=posixAccount)" | grep -E 'uid: |dn: |cn: |sn: |uidNumber: '				# ----- Busca en el dominio, objetos 'posixAccount', las líneas que coincidan con uid,dn,cn,sn,uidNumber
 					echo ""
 
 					echo -e "${y}--- GRUPOS ---${nc}"
-						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=posixGroup)" | grep -E 'cn: |dn: |gidNumber:'
-					echo ""
+						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=posixGroup)" | grep -E 'cn: |dn: |gidNumber:'								# ----- Busca en el dominio, objetos 'posixGroup', las líneas que coincidan con cn,dn,gidNumber
 
 					echo -e "${y} ---UNIDADES ORGANIZATIVAS --- ${nc}"
-						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=organizationalUnit)" | grep -E 'ou: |dn:'								
+						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=organizationalUnit)" | grep -E 'ou: |dn:'									# ----- Busca en el dominio, objetos 'organizationalUnit', las líneas que coincidan con ou y dn
 			}
 		#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		# ---------------------------------------- Menú selección creación de objetos ---------------------------------------------
