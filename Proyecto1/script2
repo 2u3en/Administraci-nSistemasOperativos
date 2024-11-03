@@ -146,8 +146,7 @@
 							passwd=$(campo_vacio " Introduzca la contraseña: ")
 
 				# ----- Evitar que la contraseña se alamacene en texto plano					# No funciona, fichero slapd no configurado. 
-							contraseña=$(slappasswd -s "$passwd") 
-
+							contraseña=$(slappasswd -s "$passwd")  > /dev/null 2>&1
 
 				# ----- Continuación de solicitud de atributos
 							echo ""
@@ -320,7 +319,7 @@
 							if [[ "$respuesta" =~ ^[Ss]$ ]];then
 
 				# ----- Eliminar usuario de LDAP.
-				    		ldapdelete -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" "uid=$uid,ou=usuarios,$BASE_DN"
+				    		ldapdelete -x -D -w "$ADMIN_PW" -H "$LDAP_SERVER" "uid=$uid,ou=usuarios,$BASE_DN"
 
 				# ----- Comprobación ejecución del comando anterior.
 							comprobacion "Usuario '$uid' eliminado correctamente". "Error al intentar eliminar el usuario '$uid'."
@@ -359,21 +358,6 @@
 						echo "$nuevo_gid"
 			}
 		#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-		# ----- Función para verificar que el gid es válido
-		#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-			verificar_gid(){				
-							if [ $? -ne 0 ]; then
-								echo -e "${r} Error al obtener gidNumber.${nc}"
-								return
-							fi
-
-								# Validar que gid_number sea un número
-							if ! [[ "$gid_number" =~ ^[0-9]+$ ]]; then
-								echo -e "${r} Error: gidNumber generado no es válido.${nc}"
-							
-							fi
-			}	
-		#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		# ----- Función para crear un nuevo grupo.
 		#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 			crear_grupo(){
@@ -393,17 +377,17 @@
 							return
 						fi
 
-				# ----- Llamada a la función para calcular uidNumber y verificarlo.
-						gid_number=$(obtener_ultimogid) 
-						verificar_gid=$(gid_Number)
+				# ----- Muestra el gidNumber generado y verificado.
+
+						nuevo_gid=$(obtener_ultimogid)
 						echo ""
-						echo -e "${g} Nuevo gidNumber generado: $gid_number.${nc}"
+						echo -e "${g} Nuevo gidNumber generado: $nuevo_gid.${nc}"
 
 				# ----- Creación de archivo grupo.ldif 
 						echo "dn: cn=$cn,ou=grupos,$BASE_DN" > $LDIF_GR
 						echo "objectClass: posixGroup" >> $LDIF_GR
 						echo "cn: $cn" >> $LDIF_GR		
-						echo "gidNumber: $gid_number" >> $LDIF_GR
+						echo "gidNumber: $nuevo_gid" >> $LDIF_GR
 							
 				# ----- 				
 						echo ""
@@ -751,27 +735,29 @@
 						    esac
 
 				# ----- Solicitud nuevo valor en el caso de atributos diferentes al nombre de la OU
-						echo ""
-		   				read -p " Introduzca el nuevo valor para $atributo: " nuevo_valor
+						if [ -n "$atributo" ];then
+							echo ""
+		   					read -p " Introduzca el nuevo valor para $atributo: " nuevo_valor
 
 				# ----- Creación del archivo de modificación.
-						echo "dn: ou=$ou,$BASE_DN" > "$CAMBIOS_FILE"
-						echo "changetype: modify" >> "$CAMBIOS_FILE"
-						echo "replace: $atributo" >> "$CAMBIOS_FILE"
-						echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
+							echo "dn: ou=$ou,$BASE_DN" > "$CAMBIOS_FILE"
+							echo "changetype: modify" >> "$CAMBIOS_FILE"
+							echo "replace: $atributo" >> "$CAMBIOS_FILE"
+							echo "$atributo: $nuevo_valor" >> "$CAMBIOS_FILE" 
 
-						echo ""
-						echo -e "${g} Procesando archivo cambios.ldif... ${nc}"
-						echo ""
+							echo ""
+							echo -e "${g} Procesando archivo cambios.ldif... ${nc}"
+							echo ""
 
 				# ----- Comprobación ejecución del comando anterior..
-						comprobacion "Archivo de modificación procesado correctamente" "Error al procesar el archivo de modificación"
+							comprobacion "Archivo de modificación procesado correctamente" "Error al procesar el archivo de modificación"
 							
 				# ----- Modificación de los atributos del usuario leyendo archivo cambios.ldif.
-						ldapmodify -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$CAMBIOS_FILE" > /dev/null 2>&1  # ----- Redirección para descartar el resultado de la salida del comando 
+							ldapmodify -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -f "$CAMBIOS_FILE" > /dev/null 2>&1  # ----- Redirección para descartar el resultado de la salida del comando 
 
 				# ----- Comprobación ejecución del comando anterior.
-						comprobacion "Atributo de la OU '$ou' modificado exitosamente." "Error al modificar el atributo de la OU '$ou'."
+							comprobacion "Atributo de la OU '$ou' modificado exitosamente." "Error al modificar el atributo de la OU '$ou'."
+						fi
 
 				# ----- Limpieza del archivo.	    
 				    	> "$CAMBIOS_FILE"
@@ -842,11 +828,11 @@
 					echo ""
 
 					echo -e "${y}--- USUARIOS ---${nc}"
-						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=posixAccount)" | grep -E 'uid: |dn:'
+						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=posixAccount)" | grep -E 'uid: |dn: |cn: |sn: |uidNumber: '
 					echo ""
 
 					echo -e "${y}--- GRUPOS ---${nc}"
-						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=posixGroup)" | grep -E 'cn: |dn:'
+						ldapsearch -x -D "$ADMIN_DN" -w "$ADMIN_PW" -H "$LDAP_SERVER" -b "$BASE_DN" "(objectClass=posixGroup)" | grep -E 'cn: |dn: |gidNumber:'
 					echo ""
 
 					echo -e "${y} ---UNIDADES ORGANIZATIVAS --- ${nc}"

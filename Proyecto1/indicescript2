@@ -67,9 +67,8 @@
 #--------------------------------------------------------------------------------------------------------------------------
 
 # ----- Función para comprobar si existe el grupo.
-# ----- Función para obtener último GUIDNumber en uso.
-# ----- Utilizar el último guidnumber y calcular el siguiente. 
-# ----- Función para verificar que el gid es válido
+# ----- Función para obtener último gidNumber en uso.
+# ----- Utilizar el último gidnumber y calcular el siguiente. 
 
 
 # ----- Función para crear grupo.
@@ -77,7 +76,7 @@
 
 		# ----- Solicitud de atributos.
 		# ----- Comprobar si el grupo introducido existe.
-		# ----- Llamada a la función para calcular uidNumber.
+		# ----- Llamada a la función para calcular gidNumber.
 		# ----- Creación de archivo grupo.ldif 
 		# ----- Comprobación ejecución del comando anterior.
 		# ----- Muestra el contenido del archivo grupo.ldif para comprobar el formato.
