@@ -1,0 +1,41 @@
+----- Problemas, errores, soluciones y opinión personal -----
+
+----- PROBLEMAS
+
+ El primer problema fue el poco conocimiento a la hora de emplear bash scripting.
+ 
+ No recordaba apenas el uso de los comandos.
+ Pero poco a poco y con mucha ayuda de IA, búsquedas, vídeos, creo que he conseguido más de lo
+ que me creía capaz.
+ 
+ No me conformo con el resultado, pero no podía seguir dedicando más tiempo solamente a esta tarea.
+ 
+ En particular, los problemas más recurrentes han sido:
+ 
+  - La estructura del lenguaje en sí, es decir, la construcción de las búsquedas y susuticiones 
+    con grep y sed y la construcción de las condiciones a evaluar por los if.
+    
+  - También el hecho de las redirecciones de salida de los comandos de ldap
+    
+  - Otro problema, pero menos importante ha sido la visualización del script, es decir, 
+    los mensajes por pantalla, las preguntas...
+    
+ ----- ERRORES
+ 
+  - Al principio, los principales errores eran ya en las búsquedas de ldap, hasta que aprendí a 
+    contruirlas adecuadamente, con ayuda de variables para facilitarlo.
+    
+  - Otros errores, como por ejemplo la ejecución incorrecta de un bucle 'if' o la no modificación de un archivo, siempre se debían a código mal escrito, a pesar de la ayuda.
+  
+ ----- SOLUCIONES
+ 
+  - Para encontrar las soluciones me he apoyado en la IA,internet,vídeos y sobretodo en otros compañeros, además de ir probando cada avance del script, hasta asegurarme
+    de que funcionaba como buscaba.
+    
+ ----- OPINIÓN PERSONAL
+ 
+  - Ha sido una tarea, al principio abrumadora, me he llegado a sentir incapaz de acabarla, porque no sabía ni por donde empezar.
+  - Pero poco a poco, paso a paso, estoy contento con el resultado, pensando ahora en como me sentía al comienzo.
+  
+  - Ahora incluso me gusta un poco el scripting y espero poder ponerlo en práctica otra vez.
+    
