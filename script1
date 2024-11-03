@@ -109,8 +109,6 @@
 							sleep 1
 
 			# ----- Establecer DN del servidor.
-						read -p " Introduce la base(DN) del servidor.(Ej:dc=tu,dc=servidor):" BASE_DN
-
 						echo -e "${y} Estableciendo Distinguished Name (DN) base. ${nc}" $BASE_DN 
 							
 							sleep 1
@@ -125,8 +123,6 @@
 								fi
 								
 			# ----- Establecer URI del servidor.
-						read -p " Introduce la URI del servidor.(Ej: ldap://192.168.100.10): " LDAP_SERVER
-
 						echo -e "${y} Estableciendo URI del servidor LDAP. ${nc}" $LDAP_SERVER 
 							
 								sleep 1
@@ -141,8 +137,6 @@
 								fi
 						
 			# ----- Establecer nombre usuario con privilegios del servidor.
-						read -p " Introduce el DN del ADMIN del servidor.(Ej:cn=admin,dc=tu,dc=servidor): " LDAP_SERVER
-
 						echo -e "${y} Estableciendo admin del servidor LDAP. ${nc}" $ADMIN_DN 
 							
 								sleep 1
