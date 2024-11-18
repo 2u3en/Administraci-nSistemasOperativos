@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Propósito:Monitorizar logs
+#Propósito:Monitorizar recursos y servicios del sistema
 #Versión:1.0
 #FechadeCreación:09/11/2024
 #FechadeModificación:
@@ -18,7 +18,7 @@ BP='\033[1;35m'
 BW='\033[1;37m'
 
 # - Directorio para los logs
-LOG_DIR="/home/ruben/Documentos/scripts/Proyecto2/scripts_monitorizacion/registroLogs"
+LOG_DIR="/home/ruben/Documentos/scripts/Proyecto2/monitorizacion/registros"
 DATE=$(date "+%Y-%m-%d_%H:%M:%S")
 LOG_FILE="${LOG_DIR}/server_monitor_${DATE}.log"
 
@@ -35,11 +35,8 @@ log_header() {
 
 # - Llamada a los scripts individuales
 log_header
-./log_recursos_sistema.sh $LOG_FILE
+./log_recursos.sh $LOG_FILE
 ./log_servicios.sh $LOG_FILE
-./log_procesos.sh $LOG_FILE
-
-
 
 #./log_network_connections.sh $LOG_FILE
 

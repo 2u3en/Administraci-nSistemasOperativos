@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#Propósito:Monitorizar recursos del sistema
+#Versión:1.0
+#FechadeCreación:09/11/2024
+#FechadeModificación:
+#Github:
+#Autor:Rubén P.
+
 NC='\033[0m'
 BR='\033[1;31m'
 BG='\033[1;32m'
@@ -18,13 +25,16 @@ if [ -z "$LOG_FILE" ]; then
 fi
 
 # ========================================================================
-# ----- Función de Monitoreo de Recursos (CPU, Memoria y Procesos)
+# ----- Monitoreo de Recursos (CPU, Memoria y Procesos)
 # ========================================================================
 
+# START
+
 # - Registrar el uso de CPU 
+# ========================================================================
 echo "" >> $LOG_FILE
 echo -e "${BY}==============================================" >> $LOG_FILE
-echo -e " Uso de CPU" >> $LOG_FILE
+echo -e " -- Uso de CPU -- " >> $LOG_FILE
 echo -e "==============================================${NC}" >> $LOG_FILE
 
              cpu_info=$(top -bn1 | grep "Cpu(s)" | sed "s/Cpu(s): *//")
@@ -41,55 +51,95 @@ echo -e "==============================================${NC}" >> $LOG_FILE
 
             # Mostrar los resultados en formato de lista con etiquetas
             
-            echo -e "Usuario (us): ${us}%" >> $LOG_FILE
-            echo -e "Sistema (sy): ${sy}%" >> $LOG_FILE
-            echo -e "Prioridad (ni): ${ni}%" >> $LOG_FILE
-            echo -e "Inactivo (id): ${id}%" >> $LOG_FILE
-            echo -e "Esperando I/O (wa): ${wa}%" >> $LOG_FILE
-            echo -e "Interrupción hardware (hi): ${hi}%" >> $LOG_FILE
-            echo -e "Interrupción software (si): ${si}%" >> $LOG_FILE
-            echo -e "Steal (st): ${st}%" >> $LOG_FILE
+            echo -e "  Usuario (us): ${us}%" >> $LOG_FILE
+            echo -e "  Sistema (sy): ${sy}%" >> $LOG_FILE
+            echo -e "  Prioridad (ni): ${ni}%" >> $LOG_FILE
+            echo -e "  Inactivo (id): ${id}%" >> $LOG_FILE
+            echo -e "  Esperando I/O (wa): ${wa}%" >> $LOG_FILE
+            echo -e "  Interrupción hardware (hi): ${hi}%" >> $LOG_FILE
+            echo -e "  Interrupción software (si): ${si}%" >> $LOG_FILE
+            echo -e "  Steal (st): ${st}%" >> $LOG_FILE
             echo "" >> $LOG_FILE
 
 
 # - Registrar el uso de memoria
+# ========================================================================
 echo "" >> $LOG_FILE
 echo -e "${BY}==============================================" >> $LOG_FILE
-echo -e "Uso de Memoria" >> $LOG_FILE
+echo -e " -- Uso de Memoria -- " >> $LOG_FILE
 echo -e "==============================================${NC}" >> $LOG_FILE
 
-    # Leer el archivo /proc/meminfo y extraer algunas líneas clave
-    total_mem=$(grep MemTotal /proc/meminfo | awk '{print $2,$3}')
-    free_mem=$(grep MemFree /proc/meminfo | awk '{print $2,$3}')
-    buffers_mem=$(grep Buffers /proc/meminfo | awk '{print $2,$3}')
-    cached_mem=$(grep Cached /proc/meminfo | awk '{print $2,$3}')
+            mem_fisica=$(top -b -n 1 | grep "MiB Mem")
+            mem_swap=$(top -b -n 1 | grep "MiB Intercambio")
+          
 
-    # Verificar si alguna línea no tiene datos válidos (por ejemplo, si el valor está vacío)
-    if [[ -z "$total_mem" || -z "$free_mem" || -z "$buffers_mem" || -z "$cached_mem" ]]; then
-    echo "Error: No se pudo obtener la información de la memoria" >> $LOG_FILE
-    exit 1
-    fi
-    
-    # Mostrar los resultados 
-    echo -e "Total: ${total_mem}" >> $LOG_FILE
-    echo -e "Libre: ${free_mem}" >> $LOG_FILE
-    echo -e "Buffers: ${buffers_mem}" >> $LOG_FILE
-    echo -e "Caché: ${cached_mem}" >> $LOG_FILE
+            echo -e "  Memoria Física" >> "$LOG_FILE"
+            echo -e "  $mem_fisica" >> "$LOG_FILE"
 
+            echo "" >> "$LOG_FILE"
+
+            echo -e "  Memoria Swap" >> "$LOG_FILE"
+            echo -e "  $mem_swap" >> "$LOG_FILE"
+
+
+# - Registrar los 5 procesos que más CPU consumen
+# ========================================================================
+echo "" >> $LOG_FILE
+echo -e "${BY}==============================================" >> $LOG_FILE
+echo -e " -- 5 Procesos que más CPU consumen -- " >> $LOG_FILE
+echo -e "==============================================${NC}" >> $LOG_FILE
+
+            echo -e "   PID - %CPU - COMMAND" >> "$LOG_FILE"          
+            ps -eo pid,%cpu,comm --sort=-%cpu | head -n 6 | tail -n 5 >> "$LOG_FILE"    
+
+            # ---- Con 'ps' obtenemos los procesos.
+            # ---- Con -e(--everyone) indicamos que muestre tanto los procesos del sistema como los de usuario.
+            # ---- Con -o personalizamos la salida especificando los campos a mostrar (pid,%cpu,comm)
+            # ---- Los ordenamos de mayor a menor uso de cpu con '--sort=-%cpu'
+            # ---- Con 'head -n 6' obtenemos las 6 primeras líneas y como la primera es el encabezado, con 'tail -n 5' eliminamos la obtención de este.
+            # ---- Por último lo registramos en el fichero.  
+
+
+# - Registrar los 5 procesos que más memoria consumen
+# ========================================================================
+echo "" >> $LOG_FILE
+echo -e "${BY}==============================================" >> $LOG_FILE
+echo -e " -- 5 Procesos que más memoria consumen -- " >> $LOG_FILE
+echo -e "==============================================${NC}" >> $LOG_FILE
+
+            echo -e "   PID - %MEM - COMMAND" >> "$LOG_FILE"          
+            ps -eo pid,%mem,comm --sort=-%mem | head -n 6 | tail -n 5 >> "$LOG_FILE"        
 
 
 # - Registrar el uso de espacio en disco
+# ========================================================================
 echo "" >> $LOG_FILE
 echo -e "${BY}==============================================" >> $LOG_FILE
-echo -e "Uso de Espacio en Disco" >> $LOG_FILE
+echo -e " -- Uso de Espacio en Discos -- " >> $LOG_FILE
 echo -e "==============================================${NC}" >> $LOG_FILE
-df -h >> $LOG_FILE
-echo "" >> $LOG_FILE
 
-# - Registrar la carga del sistema (load averages)
-echo "" >> $LOG_FILE
-echo -e "${BY}==============================================" >> $LOG_FILE
-echo -e "Carga del Sistema (load averages)" >> $LOG_FILE
-echo -e "==============================================${NC}" >> $LOG_FILE
-uptime >> $LOG_FILE
-echo "" >> $LOG_FILE
+            # ----- Comando para obtener las particiones y el espacio libre
+            df -h | grep -vE 'cdrom|S.ficheros' | while read line; do
+            
+            # Extraer el nombre de la partición, el tamaño, el espacio usado y libre
+            partition=$(echo $line | awk '{print $1}')
+            size=$(echo $line | awk '{print $2}')
+            used=$(echo $line | awk '{print $3}')
+            available=$(echo $line | awk '{print $4}')
+            use_percent=$(echo $line | awk '{print $5}' | sed 's/%//')
+            montado=$(echo $line | awk '{print $6}')
+
+            # Mostrar información de la partición
+            echo -e "  Partición: $partition" >> $LOG_FILE
+            echo -e "  Tamaño:$size - Usado:$used - Libre:$available - Uso:$use_percent% - Montado en:$montado" >> $LOG_FILE
+            echo "" >>"$LOG_FILE"
+
+            # Verificar si el uso de la partición es mayor o igual al 90%
+                if [[ $use_percent -ge 90 ]]; then
+                    echo -e "¡Advertencia! La partición $partition tiene más del 90% de espacio usado." >> $LOG_FILE
+                
+                fi
+            done
+
+
+# END
