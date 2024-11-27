@@ -1,43 +1,98 @@
-#!/bin/bash
+    #!/bin/bash
 
-#Propósito:Monitorizar recursos y servicios del sistema
-#Versión:1.0
-#FechadeCreación:09/11/2024
-#FechadeModificación:
-#Github:
-#Autor:Rubén P.
+    #Propósito:Monitorizar recursos y servicios del sistema
+    #Versión:2.0
+    #FechadeCreación:09/11/2024
+    #FechadeModificación:25/11/2024
+    #Github:
+    #Autor:Rubén P.
 
-# START
+    # START
 
-NC='\033[0m'
-BR='\033[1;31m'
-BG='\033[1;32m'
-BY='\033[1;33m'
-BB='\033[1;34m'
-BP='\033[1;35m'
-BW='\033[1;37m'
+    NC='\033[0m'
+    BR='\033[1;31m'
+    BG='\033[1;32m'
+    BY='\033[1;33m'
+    BB='\033[1;34m'
+    BP='\033[1;35m'
+    BW='\033[1;37m'
 
-# - Directorio para los logs
-LOG_DIR="/home/ruben/Documentos/scripts/Proyecto2/monitorizacion/registros"
-DATE=$(date "+%Y-%m-%d_%H:%M:%S")
-LOG_FILE="${LOG_DIR}/server_monitor_${DATE}.log"
 
-# - Creación del directorio de logs si no existe
-mkdir -p $LOG_DIR
+    export PATH=$PATH:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/sbin
+    export HOME=/home/ruben/Documentos/scripts/Proyecto2/monitorizacion/
 
-# - Función para registrar la cabecera con la fecha y hora
-log_header() {
-    echo -e "${BY}==============================================" >> $LOG_FILE
-    echo -e "Monitorización del Servidor - $DATE" >> $LOG_FILE
-    echo -e "Fecha y Hora: $(date)" >> $LOG_FILE
-    echo -e "==============================================${NC}" >> $LOG_FILE
-}
+    # - Directorio para los logs
+    DATE=$(date "+%Y-%m-%d_%H:%M:%S")
+    LOG_FILE="/var/log/SERVERMONITOR/server_monitor_${DATE}.log"
+    LOG_DIR="/var/log/SERVERMONITOR"
 
-# - Llamada a los scripts individuales
-log_header
-./log_recursos.sh $LOG_FILE
-./log_servicios.sh $LOG_FILE
+    # - Creación del directorio de logs si no existe
 
-#./log_network_connections.sh $LOG_FILE
+        if [ ! -d "$LOG_DIR" ]; then
+            # Si no existe, creamos el directorio
+             mkdir -p "$LOG_DIR"
 
-# END
+            # Cambiamos el propietario del directorio para que sea accesible
+             chown $(whoami):$(whoami) "$LOG_DIR"
+
+            # Configuramos permisos de lectura, escritura y ejecución
+             chmod 755 "$LOG_DIR"
+        
+        fi
+
+
+    # - Función para registrar la cabecera con la fecha y hora
+    header() {
+        echo -e "${BG}======================================================" >> $LOG_FILE
+        echo -e " SCRIPT SUPERVISIÓN INTEGRAL DE UN SERVIDOR LINUX " >> $LOG_FILE
+        echo -e "Fecha y Hora: $(date)" >> $LOG_FILE
+        echo -e "======================================================${NC}" >> $LOG_FILE
+    }
+
+    cabecera_recursos(){
+        echo -e "${BB}===================================================" >> $LOG_FILE
+        echo -e " -- RECURSOS DEL SISTEMA -- $(date)" >> $LOG_FILE
+        echo -e "========================================================${NC}" >> $LOG_FILE
+    }
+
+    cabecera_servicios(){
+        echo -e "${BB}===================================================" >> $LOG_FILE
+        echo -e " -- SERVICIOS DEL SISTEMA -- $(date)" >> $LOG_FILE
+        echo -e "========================================================${NC}" >> $LOG_FILE
+    }
+
+    cabecera_sucesos(){
+        echo -e "${BB}=======================================================" >> $LOG_FILE
+        echo -e " -- LOGS DE SISTEMA -- $(date)" >> $LOG_FILE
+        echo -e "=======================================================${NC}" >> $LOG_FILE
+    }
+
+        
+        # - Llamada a los scripts individuales
+
+        logger -t "server_monitor" -p local0.info "INICIO DE LA MONITORIZACION DEL SERVIDOR"
+
+        header
+
+        cabecera_recursos
+        /home/ruben/Documentos/scripts/Proyecto2/monitorizacion/log_recursos.sh $LOG_FILE 
+
+        logger -p local0.info -t "server_monitor" "Recursos del sistema registrados"
+
+
+        cabecera_sucesos
+        /home/ruben/Documentos/scripts/Proyecto2/monitorizacion/log_sucesos.sh $LOG_FILE 
+
+        logger -p local0.info -t "server_monitor" "Sucesos del sistema registrados"
+
+        cabecera_servicios
+        /home/ruben/Documentos/scripts/Proyecto2/monitorizacion/log_servicios.sh $LOG_FILE >/dev/null
+
+
+
+        logger -p local0.info -t "server_monitor" "Estado servicios criticos registrados" 
+
+        logger -t "server_monitor" -p local0.info "FIN DE LA MONITORIZACION DEL SERVIDOR"
+        
+
+    # END
