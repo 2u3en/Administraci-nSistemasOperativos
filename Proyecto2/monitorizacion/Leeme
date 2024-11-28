@@ -1,0 +1,58 @@
+  #Propósito:Monitorizar recursos,sucesos y servicios del sistema
+  #Versión:2.0
+  #FechadeCreación:09/11/2024
+  #FechadeModificación:28/11/2024
+  #Github:https://github.com/2u3en/Administraci-nSistemasOperativos/tree/f4c79599a213210279e5828ddb569a04041e6e53/Proyecto2/monitorizacion
+  #Autor:Rubén P.
+
+
+  -----------------------------LEEME------------------------------------
+
+  Estos scripts nos ayudan en el proceso de monitorización de un sistema cualquiera, ya sea un servidor o un equipo de usuario.
+
+  Registra el consumos de recursos, logs de sistema y logs de servicios.
+
+  El funcionamiento es el siguiente :
+
+  -----------------------------
+   - Script log_recursos.sh
+  -----------------------------
+      Este script registra :
+        - El consumo de CPU dividido por usuario,sistema,procesos, en espera... 
+        - El consumo de memoria física y de intercambio.
+        - Los 5 procesos que más CPU consumen ordenados de más a menos consumo.
+        - Los 5 procesos que más memoria consumen ordenados de más a menos consumo.
+        - El uso de espacio en disco de cada partición.
+
+  -----------------------------
+   - Script log_sucesos.sh
+  -----------------------------
+      Este script registra :
+        - Los mensajes de log de ficheros que indiquemos,filtrados por palabras clave como "error", "warning",etc, en este caso de los ficheros:    
+
+          - syslog : Para mensajes del estado del sistema,servicios, aplicaciones...
+          - dmesg : Para los mensajes kernel, con información sobre el arranque del sistema, errores de hardware...
+
+  -----------------------------
+   - Script log_servicios.sh
+  -----------------------------
+      Este script registra :
+        - El estado de todos los servicios del sistema y sus dependencias.
+        - El estado de servicios indicados expresamente y sus mensajes de log.
+        - Una lista de servicios fallidos o con problemas.
+      Este script será el que programemos con AT.
+
+  -----------------------------
+   - Script logs_monitor.sh
+  -----------------------------
+      Este script es el principal e invoca a los otros 3.
+        - En él indicamos el directorio y el fichero donde almacenarán los script individuales su información.
+        - Este script está programado con CRON para que se ejecute cada 5 minutos.
+        - Lo hemos convertido en un servicio (no lo he conseguido).
+
+  Todos los scripts registran información en un logger creado expresamente para este proyecto llamado "local0".
+
+  Por último, con la herramienta "logcheck" envíamos los mensajes indicados en el logger a nuestro correo electrónico.
+
+  
+
