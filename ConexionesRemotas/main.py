@@ -1,9 +1,9 @@
 import os
 import sys
 
-# Importar los scripts de conexión SSH y RDP
-from conexion_ssh import ConexionSSH  # Asumiendo que el script de SSH está en un archivo llamado 'conexion_ssh.py'
-from conexion_xfreerdp import ConexionRDP  # Asumiendo que el script de RDP está en un archivo llamado 'conexion_rdp.py'
+# Importar los scripts de conexión SSH y XFREERDP
+from conexion_ssh import ConexionSSH
+from conexion_xfreerdp import ConexionRDP
 
 
 def menu():
