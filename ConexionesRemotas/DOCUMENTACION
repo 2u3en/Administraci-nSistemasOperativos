@@ -1,0 +1,146 @@
+DOCUMENTACIÓN "CONEXIONES REMOTAS"
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ÍNDICE
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    1 - OBJETIVO
+    2 - MÉTODOS USADOS
+    3 - COMPONENTES
+    4 - FUNCIONES
+    5 - FLUJO DEL PROGRAMA
+    6 - DIAGRAMA DE FLUJO
+    7 - CASOS DE USO
+    8 - MEJORAS
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+1 - OBJETIVO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Este script permite gestionar conexiones remotas, tanto por terminal como gráficas, entre sistemas operativos Windows(W10 y WServer22) y Linux(Ubuntu24.04).
+Dependiendo del sistema operativo desde el cual se ejecuta el script, se brindan opciones al usuario para conectarse a otros sistemas de forma remota.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+2 - MÉTODOS USADOS
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+SSH, MSTSC, XFREERDP y REMMINA.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ 3 - COMPONENTES
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Importación de Librerías y Clases:
+    Bibliotecas del sistema
+        OS y SYS : Para determinar el sistema operativo y manejar las excepciones.
+
+    Clases y módulos creados :
+        ConexionSSH : conexion_ssh
+        ConexionMSTSC : conexion_mstsc
+        ConexionRDP : conexion_xfreerdp
+        ConexionREMMINA : conexion_remmina
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+4 - FUNCIONES
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    1 - obtener_sistema_operativo():
+        Detecta el sistema operativo desde el cual se ejecuta el script.
+        Si es Linux, devuelve "linux", y si es Windows, devuelve "windows". Si es otro sistema, termina la ejecución con un mensaje de error.
+
+    2 - menu_conexion_origen(sistema_origen):
+       Muestra un menú para que el usuario seleccione a qué sistema operativo desea conectarse: Windows o Linux.
+       Recibe como parámetro el sistema operativo de origen (el que ejecuta el script).
+
+
+    Funciones de Menú por Sistema Operativo de Origen y Destino:
+
+    1 - opciones_conexion_windows_a_windows(): Si el sistema operativo de origen es Windows, ofrece opciones para conectar a otro Windows (por SSH o MSTSC).
+
+    2 - opciones_conexion_windows_a_linux(): Si el sistema operativo de origen es Windows, ofrece la opción de conectar a Linux (por SSH).
+
+    3 - opciones_conexion_linux_a_windows(): Si el sistema operativo de origen es Linux, ofrece opciones para conectar a Windows (por SSH o XFREERDP).
+
+    4 - opciones_conexion_linux_a_linux(): Si el sistema operativo de origen es Linux, ofrece opciones para conectar a otro Linux (por SSH o REMMINA).
+
+    5 - obtener_datos_conexion(): Solicita al usuario los datos necesarios para establecer la conexión remota: IP del servidor, puerto, usuario y contraseña.
+
+    6 - main(): Función principal que orquesta todo el flujo del script.
+        Llama a obtener_sistema_operativo() para detectar el sistema operativo de origen.
+        Luego llama a menu_conexion_origen() para determinar a qué sistema operativo desea conectarse el usuario.
+        Dependiendo de la combinación de sistema operativo de origen y destino, se llama a las funciones correspondientes para establecer la conexión remota mediante el protocolo seleccionado.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+5 - FLUJO DEL PROGRAMA
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    1 - INICIO
+        El script comienza con la ejecución de la función main().
+
+        Detección del Sistema Operativo de Origen:
+            Se ejecuta la función obtener_sistema_operativo() para identificar si el script se está ejecutando en Windows o Linux.
+            Dependiendo del resultado ("windows" o "linux"), el script procede con las opciones correspondientes.
+
+    2 - MENÚ DE SELECCIÓN DE DESTINO
+        Dependiendo del sistema operativo de origen, el script llama a menu_conexion_origen(sistema_origen) para mostrar un menú de selección de destino al usuari@:
+            Windows a Windows
+            Windows a Linux
+            Linux a Windows
+            Linux a Linux
+
+    3 - SELECCIÓN DEL MÉTODO DE CONEXIÓN
+        Dependiendo del sistema operativo de destino, el script presenta un submenú con las opciones de conexión disponibles, que en función de origen y destino son diferentes.
+        Usuari@ elige el método de conexión (por terminal o gráfico).
+
+    4- SOLICITUD DE DATOS DE CONEXIÓN AL USUARI@
+       Se solicita al usuari@ para establecer la conexión remota :
+            - IP o nombre del servidor.
+            - Puerto(por si es diferente al puerto por defecto).
+            - Usuari@.
+            - Contraseña.
+
+    5 - ESTABLECIMIENTO DE LA CONEXIÓN
+        El script instancia la clase correspondiente (por ejemplo, ConexionSSH, ConexionMSTSC, etc.) con los datos proporcionados por usuari@.
+        Llama al método adecuado para establecer la conexión remota.
+        Dependiendo del protocolo, se inicia la conexión (por ejemplo, SSH, RDP, etc.).
+
+    6 - REPETIR O FINALIZAR
+        El ciclo continúa o se finaliza.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+6 - DIAGRAMA DE FLUJO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    INICIO
+       |
+       |-> Obtener sistema operativo de origen (Windows/Linux)
+       |
+       |-> Mostrar menú de selección de destino (Windows/Linux)
+       |
+       |-> Selección de destino (Windows/Linux)
+       |
+       |-> Mostrar menú de opciones de conexión (SSH, MSTSC, XFREERDP, REMMINA)
+       |
+       |-> Ingresar datos de conexión (IP, puerto, usuario, contraseña)
+       |
+       |-> Establecer la conexión remota (según método seleccionado)
+       |
+       |-> Fin o continuar (según elección)
+    FIN
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+7 - CASOS DE USO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    Desde Windows:
+        Si el sistema operativo de origen es Windows:
+            Windows a Windows: Usuari@ puede elegir entre SSH (para conexiones por terminal) o MSTSC (para conexión gráfica).
+            Windows a Linux: Solo está disponible SSH para conectar a un sistema Linux.
+
+    Desde Linux:
+        Si el sistema operativo de origen es Linux:
+            Linux a Windows: Usuari@ puede elegir entre SSH (conexión por terminal) o XFREERDP (conexión gráfica).
+            Linux a Linux: Usuari@ puede elegir entre SSH o REMMINA (para conexiones gráficas).
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+8 - MEJORAS
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    Añadir más protocolos de conexión como VNC o FTP para mayor flexibilidad.
+    Mejorar la interfaz de usuario con validaciones de entradas más robustas.
+    Implementar un sistema de logging para registrar todas las conexiones y errores.
