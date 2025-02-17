@@ -1,7 +1,9 @@
+# Enviar trabajo a imprimir
+
 import subprocess
 from colorama import Fore, Style
 
-
+# IMPRIMIR TRABAJO
 def imprimir_documento():
     try:
         # Solicitar el nombre de la impresora
@@ -10,7 +12,7 @@ def imprimir_documento():
         # Solicitar la ruta del archivo a imprimir
         archivo = input(f"{Fore.CYAN}\n\tIntroduce la ruta del archivo a imprimir: {Style.RESET_ALL}")
 
-        # Solicitar el número de copias
+        # Solicitar el número de copias mayor que cero
         while True:
             try:
                 copias = int(input(f"{Fore.CYAN}\n\tIntroduce el número de copias: {Style.RESET_ALL}"))
@@ -27,8 +29,8 @@ def imprimir_documento():
             f"\n\t{Fore.GREEN}Enviando el archivo {archivo} a la impresora {impresora} con {copias} copias...{Style.RESET_ALL}")
         subprocess.check_call(["lp", "-d", impresora, "-n", str(copias), archivo],stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        print(
-            f"\n\t{Fore.GREEN}Trabajo de impresión enviado a la impresora {impresora} con {copias} copias.{Style.RESET_ALL}")
+        print(f"\n\t{Fore.GREEN}Trabajo de impresión enviado a la impresora {impresora} con {copias} copias.{Style.RESET_ALL}")
+
     except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}Error al enviar el trabajo de impresión: {e}{Style.RESET_ALL}")
     except Exception as e:

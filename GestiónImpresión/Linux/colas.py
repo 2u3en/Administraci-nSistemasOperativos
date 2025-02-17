@@ -1,9 +1,11 @@
-# colas.py
+# Colas de impresión
+
 import os
 import subprocess
 from colorama import Fore, Style
 
-#1.Listar colo de trabajos de impresión
+# ----------------------------------------------------------
+# LISTAR COLA DE TRABAJOS DE UNA IMPRESORA
 def listar_trabajos(impresora):
     try:
         # Ejecutar lpstat -W completed para obtener los trabajos completados
@@ -14,7 +16,9 @@ def listar_trabajos(impresora):
         if resultado_completados.strip():  # Si hay resultados
             # Agregar una cabecera para los trabajos completados
             print(f"\t{Fore.CYAN}{'ID':<10}{'Usuario':<15}{'Tamaño':<10}{'Fecha'}{Style.RESET_ALL}")
+
             for linea in resultado_completados.splitlines():
+
                 # Filtrar la línea que contiene el texto 'destino predeterminado'
                 if "destino predeterminado del sistema" not in linea:
                     # Separar los campos por espacio, ajustando el formato
@@ -23,12 +27,13 @@ def listar_trabajos(impresora):
                     usuario = campos[1]
                     tamanio = campos[2]
                     fecha = " ".join(campos[3:])
+
                     # Imprimir los trabajos con un formato adecuado
                     print(f"\t{Fore.YELLOW}{job_id:<10}{usuario:<15}{tamanio:<10}{fecha}{Style.RESET_ALL}")
         else:
             print(f"{Fore.YELLOW}No hay trabajos completados.{Style.RESET_ALL}")
 
-        print()  # Salto de línea adicional
+        print()  # Salto de línea
 
         # Ejecutar lpstat -W not-completed para obtener los trabajos no completados
         resultado_no_completados = subprocess.check_output(["lpstat", "-W", "not-completed", "-d", impresora], universal_newlines=True)
@@ -37,15 +42,18 @@ def listar_trabajos(impresora):
         if resultado_no_completados.strip():  # Si hay resultados
             # Agregar una cabecera para los trabajos no completados
             print(f"\t{Fore.CYAN}{'ID':<10}{'Usuario':<15}{'Tamaño':<10}{'Fecha'}{Style.RESET_ALL}")
+
             for linea in resultado_no_completados.splitlines():
                 # Filtrar la línea que contiene el texto 'destino predeterminado'
                 if "destino predeterminado del sistema" not in linea:
+
                     # Separar los campos por espacio, ajustando el formato
                     campos = linea.split()
                     job_id = campos[0]
                     usuario = campos[1]
                     tamanio = campos[2]
                     fecha = " ".join(campos[3:])
+
                     # Imprimir los trabajos con un formato adecuado
                     print(f"\t{Fore.YELLOW}{job_id:<10}{usuario:<15}{tamanio:<10}{fecha}{Style.RESET_ALL}")
         else:
@@ -54,6 +62,9 @@ def listar_trabajos(impresora):
     except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}Error al obtener la lista de trabajos de impresión: {e}{Style.RESET_ALL}")
 
+
+# ----------------------------------------------------------
+# CANCELAR UN TRABAJO DE UNA IMPRESORA
 def cancelar_trabajo():
     try:
         # Solicitar al usuario que ingrese el nombre de la impresora
@@ -76,7 +87,9 @@ def cancelar_trabajo():
     except Exception as e:
         print(f"{Fore.RED}Error desconocido al cancelar el trabajo: {e}{Style.RESET_ALL}")
 
-# Mover un trabajo de una impresora a otra
+
+# ----------------------------------------------------------
+# MOVER UN TRABAJO
 def mover_trabajo():
     try:
         # Solicitar el nombre de las impresoras y el ID del trabajo
@@ -95,13 +108,13 @@ def mover_trabajo():
     except Exception as e:
         print(f"\n\t{Fore.RED}Error desconocido: {e}{Style.RESET_ALL}")
 
-
-# Eliminar todos los trabajos de la cola de una impresora
+# ----------------------------------------------------------
+# ELIMINAR TODOS LOS TRABAJOS DE UNA COLA DE UNA IMPRESORA
 def eliminar_todos_los_trabajos():
     try:
         impresora = input(f"\n\t{Fore.CYAN}Introduce el nombre de la impresora de la que deseas eliminar los trabajos: {Style.RESET_ALL}")
-
         subprocess.check_call(["cancel", "-a", impresora])
         print(f"\n\t{Fore.GREEN}Todos los trabajos en la cola de la impresora {impresora} han sido eliminados. {Style.RESET_ALL}")
+
     except subprocess.CalledProcessError as e:
         print(f"\n\t{Fore.RED}Error al eliminar los trabajos de la cola de la impresora {impresora}: {e}{Style.RESET_ALL}")

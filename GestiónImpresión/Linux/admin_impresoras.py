@@ -1,24 +1,26 @@
+# Administración de impresoras
+
 import subprocess
 from colorama import Fore, Back, Style, init
 import cups
 import time
 from info_impresoras import listar_impresoras,mostrar_impresora_default
 
-# Inicializar colorama para que funcione correctamente en Windows y Linux
+# Inicializar colorama
 init(autoreset=True)
 
 # Crear una instancia del objeto CUPS
 conn = cups.Connection()
 
-# 4. Establecer la impresora predeterminada
+# ----------------------------------------------------------
+# ESTABLECER IMPRESORA PREDETERMINADA
 def establecer_impresora_default():
     try:
         # Listar las impresoras disponibles
         listar_impresoras()
 
-        # Solicitar al usuario la impresora que quiere establecer como predeterminada
-        impresora = input(
-            f"\n{Fore.YELLOW}Introduce el nombre de la impresora que deseas establecer como predeterminada (o 'cancelar' para cancelar): {Style.RESET_ALL}")
+        # Solicitar al usuario  el nombre de la impresora a establecer como predeterminada
+        impresora = input(f"\n{Fore.YELLOW}Introduce el nombre de la impresora que deseas establecer como predeterminada (o 'cancelar' para cancelar): {Style.RESET_ALL}")
 
         if impresora.lower() == "cancelar":
             print(f"{Fore.RED}Acción cancelada.{Style.RESET_ALL}")
@@ -32,11 +34,11 @@ def establecer_impresora_default():
         print(f"\n{Fore.YELLOW}Estableciendo la impresora {impresora} como predeterminada...{Style.RESET_ALL}")
         resultado = subprocess.run(["lpoptions", "-d", impresora], text=True, capture_output=True)
 
-        # Comprobar si el comando fue exitoso
+        # Comprobar ejecución del comando
         if resultado.returncode == 0:
             print(f"{Fore.GREEN}La impresora {impresora} ha sido establecida como la impresora predeterminada.{Style.RESET_ALL}")
 
-            # Esperar un momento para asegurar que la configuración se haya actualizado
+            # Esperar para asegurar que la configuración se haya actualizado
             time.sleep(1)
 
             # Verificar la impresora predeterminada después del cambio
@@ -44,14 +46,15 @@ def establecer_impresora_default():
             mostrar_impresora_default()
 
         else:
-            print(
-                f"{Fore.RED}Error al establecer la impresora {impresora} como predeterminada: {resultado.stderr}{Style.RESET_ALL}")
+            print(f"{Fore.RED}Error al establecer la impresora {impresora} como predeterminada: {resultado.stderr}{Style.RESET_ALL}")
 
+    # Captura de errores
     except Exception as e:
         print(f"{Fore.RED}Error desconocido: {e}{Style.RESET_ALL}")
 
 
-# 5. Deshabilitar una impresora
+# ----------------------------------------------------------
+# DESHABILITAR IMPRESORA
 def disable_impresora(impresora):
     try:
         print(f"\n\t{Fore.YELLOW}Deshabilitando la impresora {impresora}...{Style.RESET_ALL}")
@@ -61,7 +64,8 @@ def disable_impresora(impresora):
         print(f"{Fore.RED}Error al deshabilitar la impresora {impresora}: {e}{Style.RESET_ALL}")
 
 
-# 6. Habilitar una impresora
+# ----------------------------------------------------------
+# HABILITAR IMPRESORA
 def enable_impresora(impresora):
     try:
         print(f"\n\t{Fore.YELLOW}Habilitando impresora {impresora}...{Style.RESET_ALL}")
@@ -70,6 +74,9 @@ def enable_impresora(impresora):
     except Exception as e:
         print(f"{Fore.RED}Error al habilitar la impresora {impresora}: {e}{Style.RESET_ALL}")
 
+
+# ----------------------------------------------------------
+# ESTABLECER LIMITE DE PÁGINAS
 def establecer_limite_paginas():
     try:
         # Solicitar al usuario que ingrese el nombre de la impresora
@@ -90,11 +97,15 @@ def establecer_limite_paginas():
         else:
             print(f"{Fore.YELLOW}No se estableció límite de páginas.{Style.RESET_ALL}")
 
+    # Captura de errores
     except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}Error al establecer el límite de páginas: {e}{Style.RESET_ALL}")
     except Exception as e:
         print(f"{Fore.RED}Error desconocido al establecer el límite de páginas: {e}{Style.RESET_ALL}")
 
+
+# ----------------------------------------------------------
+# AGREGAR IMPRESORA
 def agregar_impresora():
     try:
         # Solicitar el nombre de la impresora
@@ -103,37 +114,37 @@ def agregar_impresora():
         # Solicitar el URI del dispositivo (por ejemplo, usb://EPSON/PrinterModel)
         device_uri = input(f"{Fore.CYAN}\n\tIntroduce el URI del dispositivo (por ejemplo, IPP://EPSON/PrinterModel): {Style.RESET_ALL}")
 
-        # Solicitar el controlador de la impresora
-        driver = input(f"{Fore.CYAN}\n\tIntroduce el modelo del controlador de la impresora: {Style.RESET_ALL}")
-
         # Crear el comando lpadmin para agregar la impresora
-        comando = ["sudo", "lpadmin", "-p", nombre_impresora, "-E", "-v", device_uri, "-m", driver]
+        comando = ["sudo", "lpadmin", "-p", nombre_impresora, "-E", "-v", device_uri]
 
         # Ejecutar el comando
         subprocess.check_call(comando)
 
         # Mensaje de confirmación
         print(f"{Fore.GREEN}\n\tLa impresora {nombre_impresora} ha sido agregada correctamente.{Style.RESET_ALL}")
+
+    # Captura de erroes
     except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}Error al agregar la impresora: {e}{Style.RESET_ALL}")
     except Exception as e:
         print(f"{Fore.RED}Error desconocido: {e}{Style.RESET_ALL}")
 
 
-
-
+# ----------------------------------------------------------
+# ELIMINAR IMPRESORA
 def eliminar_impresora():
     try:
-        # Solicitar al usuario que ingrese el nombre de la impresora
+        # Solicitar nombre de la impresora
         impresora = input(f"{Fore.CYAN}\n\tIntroduce el nombre de la impresora que deseas eliminar: {Style.RESET_ALL}")
 
-        # Ejecutar el comando lpadmin para eliminar la impresora
+        # Ejecutar el comando para eliminar la impresora
         print(f"\n\t{Fore.GREEN}Eliminando la impresora {impresora}...{Style.RESET_ALL}")
         subprocess.check_call(["lpadmin", "-x", impresora])
 
         # Confirmar la eliminación
         print(f"\t{Fore.GREEN}La impresora {impresora} ha sido eliminada correctamente.{Style.RESET_ALL}")
 
+    # Captura de errores
     except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}Error al eliminar la impresora {impresora}: {e}{Style.RESET_ALL}")
     except Exception as e:

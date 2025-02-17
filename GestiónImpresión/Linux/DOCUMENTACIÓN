@@ -1,0 +1,218 @@
+DOCUMENTACIÓN "GESTIÓN DE IMPRESORAS EN LINUX"
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ÍNDICE
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    1 - OBJETIVO
+    2 - MÉTODOS USADOS
+    3 - COMPONENTES
+    4 - FUNCIONES
+    5 - FLUJO DEL PROGRAMA
+    6 - DIAGRAMA DE FLUJO
+    7 - CASOS DE USO
+    8 - MEJORAS
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+1 - OBJETIVO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Este script tiene como objetivo la gestión completa de impresoras, trabajos de impresión, colas y usuarios en un sistema Linux que utiliza CUPS como servicio de impresión. Permite la administración de impresoras, la gestión de trabajos en cola, el control de acceso de los usuarios a las impresoras, la visualización del estado del servicio y la capacidad de enviar trabajos de impresión a las impresoras disponibles.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+2 - MÉTODOS USADOS
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    subprocess : Para ejecutar comandos de terminal como lpstat, lp, lpadmin, entre otros.
+    CUPS: El sistema de impresión utilizado en el backend para gestionar las impresoras y los trabajos.
+    PyCUPS : En algunas funciones se intentó utlizar pero daba mejor resultado trabajando con subprocess, y era más sencillo de utilizar.
+    Colorama: Para añadir color y estilo a los mensajes en la terminal, mejorando la experiencia del usuario.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+3 - COMPONENTES
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Importación de Librerías y Clases:
+
+    Bibliotecas del sistema
+        subprocess: Ejecuta comandos en el sistema operativo.
+        cups: Permite interactuar con el sistema de impresión CUPS.
+        colorama: Añade color a los mensajes de la terminal.
+
+    Funciones:
+       Funciones de gestión de impresoras: listar_impresoras, estado_impresora, mostrar_impresora_default, estado_servicio.
+       Funciones de administración de impresoras: establecer_impresora_default, disable_impresora, enable_impresora, establecer_limite_paginas, agregar_impresora, eliminar_impresora.
+       Funciones de trabajos de impresión: imprimir_documento.
+       Funciones de colas de impresión: listar_trabajos, cancelar_trabajo, mover_trabajo, eliminar_todos_los_trabajos.
+       Funciones de administración de usuarios: administrar_usuarios.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+4 - FUNCIONES
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    listar_impresoras()
+    Lista todas las impresoras disponibles conectadas al sistema, mostrando sus nombres y estados actuales. Si no se encuentran impresoras, el script muestra un mensaje de error.
+
+    estado_impresora()
+    Verifica el estado de las impresoras del sistema mediante el comando lpstat -t y presenta información relevante sobre cada una.
+
+    mostrar_impresora_default()
+    Muestra la impresora predeterminada del sistema utilizando el comando lpstat -d para obtener esta información.
+
+    estado_servicio()
+    Muestra si el servicio de impresión CUPS está en ejecución, verificando el estado con el comando lpstat -r.
+
+    imprimir_documento()
+    Permite enviar un documento a una impresora específica, especificando el número de copias, la impresora y el archivo a imprimir.
+
+    administrar_usuarios()
+    Administra el acceso de los usuarios a las impresoras, permitiendo permitir o denegar acceso a una impresora específica.
+
+    disable_impresora()
+    Deshabilita una impresora del sistema. El usuario debe proporcionar el nombre de la impresora que desea deshabilitar. Después de esto, la impresora dejará de estar disponible para imprimir.
+
+    enable_impresora()
+    Habilita una impresora previamente deshabilitada en el sistema. El usuario debe proporcionar el nombre de la impresora que desea habilitar para que vuelva a estar disponible para impresión.
+
+    establecer_limite_paginas()
+    Permite establecer un límite de páginas para una impresora específica. El usuario puede especificar el número máximo de páginas que se pueden imprimir en una sola vez. Esto es útil para controlar el uso de la impresora.
+
+    agregar_impresora()
+    Agrega una nueva impresora al sistema. El usuario debe proporcionar la dirección de la impresora (como una URL o dirección IP) y otras configuraciones necesarias para que se pueda agregar al sistema de impresión.
+
+    eliminar_impresora()
+    Elimina una impresora del sistema. El usuario debe proporcionar el nombre de la impresora que desea eliminar, lo que hará que esta impresora deje de estar disponible para su uso.
+
+    ...
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+5 - FLUJO DEL PROGRAMA
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    1 - INICIO
+        El programa comienza con la ejecución de la función menu_principal(), que presenta un menú de opciones para el usuario.
+
+    2 - SELECCIÓN DE OPCIÓN
+
+                Administración de impresoras
+                Gestión de trabajos de impresión
+                Gestión de colas de impresión
+                Administración de usuarios
+
+    3 - ADMINISTRACIÓN DE IMPRESORAS
+
+            ADMINISTRAR IMPRESORAS
+                Establecer una impresora predeterminada.
+                Habilitar o deshabilitar impresoras.
+                Agregar impresora
+                Eliminar impresora
+                Establecer límite de páginas
+
+            INFORMACIÓN IMPRESORAS
+                Listar impresoras disponibles
+                Estado impresora
+                Ver impresora predeterminada
+                Estado del servicio CUPS
+
+    4 - GESTIÓN COLAS DE IMPRESIÓN
+                Listar trabajos en cola.
+                Cancelar trabajos de impresión.
+                Mover trabajo a otra impresora.
+                Eliminar todos los trabajos en cola.
+
+    5 - GESTIÓN DE TRABAJOS DE IMPRESIÓN
+                Enviar documentos a imprimir.
+
+    6 - ADMINISTRACIÓN DE USUARIOS
+                Permitir o denegar acceso a las impresoras a usuarios específicos.
+
+    7 - FINALIZACIÓN
+                El programa termina cuando el usuario selecciona la opción de salir.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+6 - DIAGRAMA DE FLUJO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+INICIO
+    |
+    |-> Mostrar Menú Principal
+    |        |
+    |        |
+    |                 |
+    |                 |-> Administración de impresoras
+    |                 |       |
+    |                 |       |-> Submenú de administración de impresoras
+    |                 |       |       |
+    |                 |       |       |-> Listar impresoras
+    |                 |       |       |-> Mostrar impresora predeterminada
+    |                 |       |       |-> Ver estado de impresora
+    |                 |       |       |-> Establecer impresora predeterminada
+    |                 |       |       |-> Habilitar o deshabilitar impresora
+    |                 |       |       |-> Agregar impresora
+    |                 |       |       |-> Eliminar impresora
+    |                 |
+    |                 |-> Información de impresoras
+    |                 |       |
+    |                 |       |-> Submenú de Información de impresoras
+    |                 |       |       |
+    |                 |       |       |-> Listar impresoras disponibles
+    |                 |       |       |-> Ver estado de una impresora
+    |                 |       |       |-> Mostrar impresora predeterminada
+    |                 |       |       |-> Ver estado del servicio de impresión
+    |                 |
+    |                 |-> Trabajos de impresión
+    |                 |       |
+    |                 |       |-> Submenú de trabajos de impresión
+    |                 |       |       |
+    |                 |       |       |-> Enviar documento a imprimir
+    |                 |       |       |-> Especificar impresora
+    |                 |       |       |-> Especificar archivo y número de copias
+    |                 |
+    |                 |-> Colas de impresión
+    |                 |       |
+    |                 |       |-> Submenú de colas de impresión
+    |                 |       |       |
+    |                 |       |       |-> Ver trabajos en cola
+    |                 |       |       |-> Cancelar trabajo
+    |                 |       |       |-> Mover trabajo entre impresoras
+    |                 |       |       |-> Eliminar todos los trabajos de una impresora
+    |                 |
+    |                 |-> Administración de usuarios
+    |                         |
+    |                         |-> Submenú de administración de usuarios
+    |                         |       |
+    |                         |       |-> Permitir acceso a impresora
+    |                         |       |-> Denegar acceso a impresora
+    |                         |
+    |-> Realizar acción según opción elegida
+    |
+    |-> ¿Volver al menú principal? (Sí -> Mostrar Menú Principal, No -> Finalizar)
+    |
+FIN
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+7 - CASOS DE USO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Caso 1: Administración de impresoras
+        El administrador desea gestionar las impresoras disponibles en el sistema.
+
+Caso 2: Gestión de trabajos de impresión
+        El usuario desea enviar un trabajo a una impresora.
+
+Caso 3: Administración de usuarios
+        El administrador necesita controlar el acceso de los usuarios a las impresoras.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+8 - MEJORAS
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    Añadir soporte para más servicios de impresión:
+    Incluir la integración con otros servicios de impresión como LPR o CUPS en entornos más complejos.
+
+    Mejorar la interfaz de usuario:
+    Agregar validaciones más robustas para entradas de usuarios, como verificar si las impresoras y archivos son válidos.
+
+    Integración con notificaciones:
+    Incluir notificaciones por correo electrónico o en la terminal para avisar cuando los trabajos de impresión se completen o fallen.
+
+    Implementar registro de actividad:
+    Crear un sistema de log para registrar todas las acciones realizadas, como agregar o eliminar impresoras, administrar trabajos y gestionar usuarios.

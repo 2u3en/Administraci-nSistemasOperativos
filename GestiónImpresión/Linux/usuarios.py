@@ -1,8 +1,9 @@
-# usuarios.py
+# Administración de usuarios
+
 import subprocess
 from colorama import Fore, Style
 
-
+# MENU
 def administrar_usuarios():
     try:
         # Solicitar al usuario el nombre de la impresora
@@ -15,14 +16,16 @@ def administrar_usuarios():
 
         opcion = input(f"\n\tElige una opción: ")
 
+# CONTROL PARA PERMITIR O DENEGAR ACCESO A IMPRESORAS A USUARI@S
+
         if opcion == "1":
-            # Permitir acceso a un usuario
+            # PERMITIR IMPRESION A USUARI@
             usuario = input(f"\n\tIntroduce el nombre del usuario al que deseas permitir acceso: {Style.RESET_ALL}")
             subprocess.check_call(["lpadmin", "-p", impresora, "-u", f"allow:{usuario}"])
             print(f"\t{Fore.GREEN}Acceso permitido al usuario {usuario} para la impresora {impresora}.{Style.RESET_ALL}")
 
         elif opcion == "2":
-            # Denegar acceso a un usuario
+            # DENEGAR IMPRESION A USUARI@
             usuario = input(f"\n\tIntroduce el nombre del usuario al que deseas denegar acceso: {Style.RESET_ALL}")
             subprocess.check_call(["lpadmin", "-p", impresora, "-u", f"deny:{usuario}"])
             print(f"\t{Fore.GREEN}Acceso denegado al usuario {usuario} para la impresora {impresora}.{Style.RESET_ALL}")

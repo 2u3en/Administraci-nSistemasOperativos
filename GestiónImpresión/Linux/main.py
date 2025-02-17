@@ -1,5 +1,16 @@
-# main.py
+# ----------------------------------------------------------------------------
+# Script: Gestión de impresión en Linux
+# Autor: Rubén
+# Versión: 1.0.0
+# Fecha de creación: 9/02/2025
+# Última modificación: 17/02/2025
+#
+# Descripción:
+#   Este script permite la administración de impresoras y colas de trabajos
+#   en un sistema Linux que utiliza CUPS como servicio de impresión.
+# ----------------------------------------------------------------------------
 
+# Importamos todas las funciones de los otros scripts y librerias
 from info_impresoras import(
     listar_impresoras,
     estado_impresora,
@@ -29,7 +40,8 @@ def manejar_error(mensaje):
     print(f"{Fore.RED}{mensaje}{Style.RESET_ALL}")
 
 
-# Función para el menú principal
+# ----------------------------------------------------------
+# MENU PRINCIPAL
 def menu_principal():
     while True:
         mostrar_mensaje(Fore.CYAN, "\n\t\t\t\tMenú de gestión de impresoras y trabajos de impresión:")
@@ -55,8 +67,8 @@ def menu_principal():
         else:
             manejar_error("\tOpción no válida, intenta de nuevo.\n")
 
-
-# Función para el menú de administración de impresoras
+# ----------------------------------------------------------
+# SUBMENU 1 ADMINISTRACIÓN DE IMPRESORAS
 def menu_admin_impresoras():
     while True:
         mostrar_mensaje(Fore.CYAN, "\n\t\t\t\tMenú de administración de impresoras:")
@@ -76,7 +88,7 @@ def menu_admin_impresoras():
             manejar_error("\tOpción no válida, intenta de nuevo.\n")
 
 
-# Función para el submenú de administración de impresoras
+# SUBMENÚ 2 ADMINISTRACIÓN DE IMPRESORAS
 def menu_administrar_impresoras():
     while True:
         mostrar_mensaje(Fore.CYAN, "\n\t\t\t\tSubmenú de Administración de impresoras:")
@@ -110,7 +122,7 @@ def menu_administrar_impresoras():
             manejar_error("\tOpción no válida, intenta de nuevo.\n")
 
 
-# Función para el submenú de información de impresoras
+# SUBMENÚ INFORMACIÓN DE IMPRESORAS
 def menu_info_impresoras():
     while True:
         mostrar_mensaje(Fore.CYAN, "\n\t\t\t\tSubmenú de Información de impresoras:")
@@ -136,7 +148,7 @@ def menu_info_impresoras():
             manejar_error("\tOpción no válida, intenta de nuevo.\n")
 
 
-# Función para el menú de gestión de trabajos de impresión
+# SUBMENÚ IMPRIMIR DOCUMENTO
 def menu_trabajos():
     while True:
         mostrar_mensaje(Fore.CYAN, "\n\t\t\t\tMenú de gestión de trabajos de impresión:")
@@ -153,7 +165,7 @@ def menu_trabajos():
             manejar_error("\tOpción no válida, intenta de nuevo.\n")
 
 
-# Función para el menú de gestión de colas de impresión
+# SUBMENÚ GESTIÓN DDE COLAS DE IMPRESIÓN
 def menu_colas():
     while True:
         mostrar_mensaje(Fore.CYAN, "\n\t\t\t\tMenú de gestión de colas de impresión:")
@@ -171,14 +183,14 @@ def menu_colas():
         elif opcion == "2":
             cancelar_trabajo()
         elif opcion == "3":
-            mover_trabajo()  # Llamamos a la función de mover trabajo
+            mover_trabajo()
         elif opcion == "4":
-            eliminar_todos_los_trabajos()  # Llamamos a la función de eliminar todos los trabajos
+            eliminar_todos_los_trabajos()
         elif opcion == "5":
             break
         else:
             manejar_error("\tOpción no válida, intenta de nuevo.\n")
 
-
+# LLAMADA AL MENÚ PRINCIPAL
 if __name__ == "__main__":
     menu_principal()

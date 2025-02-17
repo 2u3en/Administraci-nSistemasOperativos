@@ -7,7 +7,8 @@ import cups
 # Crear una instancia del objeto CUPS
 conn = cups.Connection()
 
-# Listar las impresoras disponibles
+# ----------------------------------------------------------
+# LISTAR IMPRESORAS DISPONIBLES
 def listar_impresoras():
     impresoras = conn.getPrinters()
     if not impresoras:
@@ -17,28 +18,35 @@ def listar_impresoras():
         for impresora in impresoras:
             print(f"\t  - {Fore.MAGENTA}{impresora}{Style.RESET_ALL}")
 
-# Mostrar la impresora predeterminada
+# ----------------------------------------------------------
+# MOSTRAR IMPRESORA PREDETERMINADA DEL SISTEMA
 def mostrar_impresora_default():
     try:
         # Ejecutar lpstat -d para obtener la impresora predeterminada
         resultado = subprocess.run(["lpstat", "-d"], text=True, capture_output=True)
 
-        # Verificar si la ejecución fue exitosa
+        # Verificar la ejecución
         if resultado.returncode == 0:
-            # Revisar si la salida contiene "destino predeterminado del sistema"
+            # Revisar si la salida contiene "destino predeterminado del sistema" para eliminar la línea
             if "destino predeterminado del sistema" in resultado.stdout:
+
                 # Extraer el nombre de la impresora predeterminada
                 impresora_default = resultado.stdout.split(":")[1].strip()
+
                 print(f"{Fore.GREEN}\n\tLa impresora por defecto actual es:")
                 print(f"\t  - {Fore.MAGENTA}{impresora_default}{Style.RESET_ALL}")
+
             else:
                 print(f"{Fore.RED}No se pudo encontrar la impresora por defecto.{Style.RESET_ALL}")
         else:
             print(f"{Fore.RED}Error al ejecutar el comando lpstat: {resultado.stderr}{Style.RESET_ALL}")
+
     except Exception as e:
         print(f"{Fore.RED}Error desconocido: {e}{Style.RESET_ALL}")
 
-# Verificar el estado de la impresora
+
+# ----------------------------------------------------------
+# VERIFICAR EL ESTADO IMPRESORAS
 def estado_impresora():
     try:
         # Ejecutar lpstat -t y capturar la salida
@@ -57,7 +65,9 @@ def estado_impresora():
     except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}Error al obtener el estado de las impresoras: {e}{Style.RESET_ALL}")
 
-# Mostrar estado del servicio CUPS
+
+# ----------------------------------------------------------
+# ESTADO DEL SERVICIO CUPS
 def estado_servicio():
     try:
         print(f"\n\t{Fore.CYAN}Estado del servicio CUPS{Style.RESET_ALL}")
