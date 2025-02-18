@@ -1,0 +1,178 @@
+DOCUMENTACIÓN "GESTIÓN DE IMPRESORAS EN WINDOWS"
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ÍNDICE
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    1 - OBJETIVO
+    2 - MÉTODOS USADOS
+    3 - COMPONENTES
+    4 - FUNCIONES
+    5 - FLUJO DEL PROGRAMA
+    6 - DIAGRAMA DE FLUJO
+    7 - CASOS DE USO
+    8 - MEJORAS
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+1 - OBJETIVO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Este script tiene como objetivo la gestión de impresoras y trabajos de impresión en un sistema operativo Windows.
+Permite la administración de impresoras locales y en red, la visualización de trabajos en cola, el envío de documentos a imprimir y la gestión de trabajos pendientes.
+Además, facilita la obtención de información sobre el estado de las impresoras, servicios y trabajos de impresión de una manera sencilla y eficiente.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+2 - MÉTODOS USADOS
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    win32print: Permite interactuar con las impresoras instaladas en el sistema operativo Windows. Se utiliza para listar impresoras, obtener información sobre su estado, y gestionar trabajos de impresión.
+    win32api: Utilizado para ejecutar comandos en el sistema operativo y manejar interacciones con el sistema, como abrir el servicio de impresión (services.msc).
+    os: Utilizado para gestionar archivos, como comprobar la existencia de documentos antes de enviarlos a imprimir.
+    colorama: Utilizado para dar formato y color a la salida de la terminal, mejorando la experiencia visual del usuario.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+3 - COMPONENTES
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Importación de Librerías y Clases:
+        win32print: Para gestionar las impresoras, consultar el estado de las impresoras y realizar operaciones con trabajos de impresión.
+        win32api: Para ejecutar funciones del sistema operativo, como abrir el servicio de impresión.
+        os: Para interactuar con el sistema de archivos y verificar la existencia de documentos.
+        colorama: Para agregar colores y formato a los mensajes que se muestran en la terminal.
+
+    Funciones:
+        Funciones de gestión de impresoras: listar_impresoras, estado_impresora, detalles_impresora, impresora_predeterminada, estado_servicio.
+        Funciones de trabajos de impresión: trabajos_impresora, imprimir_documento, cancelar_trabajo_impresion.
+        Funciones de colas de impresión: mostrar_cola_impresora.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+4 - FUNCIONES
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    listar_impresoras()
+    Lista todas las impresoras disponibles conectadas al sistema, mostrando sus nombres y estados actuales. Si no se encuentran impresoras, muestra un mensaje de error.
+
+    estado_impresora(nombre_impresora)
+    Verifica el estado de una impresora en particular, mostrando el estado actual de la impresora (en línea, fuera de línea, etc.).
+
+    detalles_impresora(nombre_impresora)
+    Muestra los detalles completos de una impresora, como su nombre, puerto y controlador.
+
+    impresora_predeterminada()
+    Muestra la impresora predeterminada del sistema.
+
+    estado_servicio()
+    Verifica si el servicio de impresión está activo. Si se encuentra activo, muestra un mensaje en consola. Si ocurre algún error, muestra un mensaje de error.
+
+    trabajos_impresora(nombre_impresora)
+    Muestra los trabajos de impresión en una impresora, mostrando detalles como el ID del trabajo y su estado.
+
+    imprimir_documento()
+    Permite al usuario enviar un documento a una impresora especificada. El usuario debe proporcionar el nombre de la impresora y la ruta del documento.
+
+    mostrar_cola_impresora()
+    Muestra los trabajos en la cola de impresión de una impresora, incluyendo detalles sobre el trabajo como el ID, el usuario que lo envió y su estado.
+
+    cancelar_trabajo_impresion()
+    Permite cancelar un trabajo de impresión en específico utilizando el ID del trabajo y el nombre de la impresora.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+5 - FLUJO DEL PROGRAMA
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    1 - INICIO
+    El programa comienza con la ejecución de la función menu_principal(), que presenta un menú con varias opciones para el usuario.
+
+    2 - SELECCIÓN DE OPCIÓN
+
+        Información impresoras: Muestra información sobre las impresoras y su estado.
+        Gestión de colas: Permite gestionar los trabajos de impresión en cola.
+        Trabajos de impresión: Permite enviar un documento a imprimir.
+
+    3 - INFORMACIÓN IMPRESORAS
+
+        Listar impresoras: Muestra una lista de impresoras disponibles.
+        Estado impresora: Muestra el estado de una impresora específica.
+        Detalles impresora: Muestra los detalles completos de una impresora.
+        Impresora predeterminada: Muestra la impresora predeterminada.
+        Estado del servicio de impresión: Verifica si el servicio de impresión está activo.
+
+    4 - GESTIÓN DE COLAS
+
+        Mostrar cola de impresión: Muestra los trabajos en cola de una impresora específica.
+        Cancelar trabajo: Cancela un trabajo de impresión.
+
+    5- GESTIÓN DE TRABAJOS DE IMPRESIÓN
+
+        Imprimir documento: Envía un documento a una impresora especificada.
+
+    6 - FINALIZACIÓN
+
+        El programa termina cuando el usuario selecciona la opción de salir.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+6 - DIAGRAMA DE FLUJO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+INICIO
+|
+|-> Mostrar Menú Principal
+| |
+| |
+| |
+| |-> Información impresoras
+| | |
+| | |-> Submenú:
+| | | |
+| | | |-> Listar impresoras
+| | | |-> Ver estado de impresora
+| | | |-> Mostrar detalles de impresora
+| | | |-> Ver impresora predeterminada
+| | | |-> Ver estado del servicio
+| |
+| |-> Gestión de colas
+| | |
+| | |-> Submenú:
+| | | |
+| | | |-> Mostrar cola de impresión
+| | | |-> Cancelar trabajo de impresión
+| |
+| |-> Trabajos de impresión
+| | |
+| | |-> Submenú:
+| | | |
+| | | |-> Imprimir documento
+| |
+|-> Realizar acción según opción elegida
+|
+|-> ¿Volver al menú principal? (Sí -> Mostrar Menú Principal, No -> Finalizar)
+|
+FIN
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+7 - CASOS DE USO
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+Caso 1: Gestión de impresoras
+El administrador desea gestionar las impresoras disponibles, consultar su estado y detalles, y establecer la impresora predeterminada.
+
+Caso 2: Gestión de colas
+El usuario necesita ver los trabajos pendientes en la cola de impresión, cancelar trabajos específicos o gestionar el estado de los trabajos.
+
+Caso 3: Enviar trabajos de impresión
+Un usuario desea imprimir un documento en una impresora especificada.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+8 - MEJORAS
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+    Agregar soporte para más servicios de impresión
+    Ampliar el soporte para otros servicios de impresión, como impresoras en red o sistemas de impresión remota.
+
+    Mejorar la validación de entradas del usuario
+    Verificar que los nombres de las impresoras y los documentos sean correctos antes de proceder con las acciones.
+
+    Agregar registro de actividades
+    Implementar un sistema de logs para registrar las acciones del usuario (por ejemplo, qué impresora fue seleccionada, qué trabajos fueron cancelados, etc.).
+
+    Integración con notificaciones
+    Agregar notificaciones para informar al usuario cuando un trabajo de impresión se ha completado o si ha ocurrido un error.
